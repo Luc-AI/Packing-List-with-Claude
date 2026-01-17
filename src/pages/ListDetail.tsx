@@ -1,8 +1,22 @@
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, MoreVertical } from 'lucide-react';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+import type { DragEndEvent } from '@dnd-kit/core';
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
 import { GlassBackground, GlassCard, ProgressBar } from '../components/ui';
-import { ItemRow, AddItemButton, ItemModal, OptionsMenu, ListModal, ListOptionsMenu } from '../components/features';
+import { SortableItemRow, AddItemButton, ItemModal, OptionsMenu, ListModal, ListOptionsMenu } from '../components/features';
 import { useStore } from '../store/useStore';
 
 // Format date for display
@@ -46,6 +60,19 @@ export function ListDetail() {
   const deleteItem = useStore((state) => state.deleteItem);
   const updateList = useStore((state) => state.updateList);
   const deleteList = useStore((state) => state.deleteList);
+  const reorderItems = useStore((state) => state.reorderItems);
+
+  // DnD sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   // Computed data
   const list = lists.find((l) => l.id === listId);
@@ -128,6 +155,23 @@ export function ListDetail() {
     }
   };
 
+  // DnD handler
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id && listId) {
+      const oldIndex = items.findIndex((item) => item.id === active.id);
+      const newIndex = items.findIndex((item) => item.id === over.id);
+
+      if (oldIndex !== -1 && newIndex !== -1) {
+        const newItems = [...items];
+        const [movedItem] = newItems.splice(oldIndex, 1);
+        newItems.splice(newIndex, 0, movedItem);
+        reorderItems(listId, newItems.map((item) => item.id));
+      }
+    }
+  };
+
   const totalItems = items.length;
   const packedItems = items.filter((item) => item.checked).length;
 
@@ -163,19 +207,27 @@ export function ListDetail() {
 
       {/* Items List */}
       {items.length > 0 ? (
-        <GlassCard variant="light" className="overflow-hidden mb-[clamp(16px,3vw,24px)]">
-          {items.map((item, index) => (
-            <ItemRow
-              key={item.id}
-              id={item.id}
-              text={item.text}
-              checked={item.checked}
-              onToggle={toggleItem}
-              onOptionsClick={handleItemOptions}
-              isLast={index === items.length - 1}
-            />
-          ))}
-        </GlassCard>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext items={items.map((i) => i.id)} strategy={verticalListSortingStrategy}>
+            <GlassCard variant="light" className="overflow-hidden mb-[clamp(16px,3vw,24px)]">
+              {items.map((item, index) => (
+                <SortableItemRow
+                  key={item.id}
+                  id={item.id}
+                  text={item.text}
+                  checked={item.checked}
+                  onToggle={toggleItem}
+                  onOptionsClick={handleItemOptions}
+                  isLast={index === items.length - 1}
+                />
+              ))}
+            </GlassCard>
+          </SortableContext>
+        </DndContext>
       ) : (
         <GlassCard variant="light" className="p-8 text-center mb-[clamp(16px,3vw,24px)]">
           <div className="text-4xl mb-3">📝</div>

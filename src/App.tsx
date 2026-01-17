@@ -1,15 +1,17 @@
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { Lists } from './pages/Lists';
+import { ListDetail } from './pages/ListDetail';
+
 function App() {
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold text-blue-600 mb-4">
-          Packing List App
-        </h1>
-        <p className="text-gray-600">
-          Project setup complete. Ready for development.
-        </p>
-      </div>
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/lists" element={<Lists />} />
+        <Route path="/lists/:listId" element={<ListDetail />} />
+        <Route path="/" element={<Navigate to="/lists" replace />} />
+        <Route path="*" element={<Navigate to="/lists" replace />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 

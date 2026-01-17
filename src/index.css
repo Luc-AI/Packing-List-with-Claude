@@ -1,1 +1,76 @@
 @import "tailwindcss";
+
+/* Glassmorphism Design System */
+:root {
+  /* Mountain Lake Color Palette */
+  --glass-bg-1: #0a3d62;
+  --glass-bg-2: #1e5f74;
+  --glass-bg-3: #2d7a8c;
+  --glass-bg-4: #3d98a8;
+  --glass-bg-5: #60b8c5;
+  --glass-bg-6: #8dd4dd;
+  --glass-bg-7: #b8e6ed;
+
+  /* Glass Effects */
+  --glass-blur: blur(20px) saturate(180%);
+  --glass-bg: rgba(255, 255, 255, 0.15);
+  --glass-bg-light: rgba(255, 255, 255, 0.12);
+  --glass-bg-hover: rgba(255, 255, 255, 0.18);
+  --glass-border: rgba(255, 255, 255, 0.3);
+  --glass-border-light: rgba(255, 255, 255, 0.25);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  --glass-shadow-hover: 0 6px 20px rgba(0, 0, 0, 0.2);
+  --glass-inset: inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  --glass-inset-light: inset 0 1px 0 rgba(255, 255, 255, 0.4);
+
+  /* Accent Colors */
+  --progress-gradient: linear-gradient(90deg, rgba(255, 183, 77, 0.95) 0%, rgba(255, 138, 101, 0.95) 100%);
+  --progress-shadow: 0 2px 8px rgba(255, 138, 101, 0.5);
+  --check-gradient: linear-gradient(135deg, rgba(129, 199, 132, 0.95) 0%, rgba(102, 187, 106, 0.95) 100%);
+  --check-shadow: 0 4px 12px rgba(102, 187, 106, 0.5);
+
+  /* Text */
+  --text-primary: white;
+  --text-secondary: rgba(255, 255, 255, 0.85);
+  --text-muted: rgba(255, 255, 255, 0.6);
+  --text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --text-shadow-light: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Base Styles */
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Utility Classes for Glass Effects */
+.glass-card {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow), var(--glass-inset);
+}
+
+.glass-card-light {
+  background: var(--glass-bg-light);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border-light);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2), var(--glass-inset-light);
+}
+
+.text-glass-primary {
+  color: var(--text-primary);
+  text-shadow: var(--text-shadow);
+}
+
+.text-glass-secondary {
+  color: var(--text-secondary);
+  text-shadow: var(--text-shadow-light);
+}
+
+.text-glass-muted {
+  color: var(--text-muted);
+}

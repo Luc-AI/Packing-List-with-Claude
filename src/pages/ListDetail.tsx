@@ -1,7 +1,8 @@
+import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, MoreVertical } from 'lucide-react';
 import { GlassBackground, GlassCard, ProgressBar } from '../components/ui';
-import { ItemRow, AddItemButton } from '../components/features';
+import { ItemRow, AddItemButton, ItemModal, OptionsMenu } from '../components/features';
 import { useStore } from '../store/useStore';
 
 // Format date for display
@@ -26,18 +27,29 @@ export function ListDetail() {
   const navigate = useNavigate();
   const { listId } = useParams<{ listId: string }>();
 
-  // Select raw data from store (more stable for React rendering)
+  // Modal state
+  const [isItemModalOpen, setIsItemModalOpen] = useState(false);
+  const [isOptionsMenuOpen, setIsOptionsMenuOpen] = useState(false);
+  const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
+  const [modalMode, setModalMode] = useState<'add' | 'edit'>('add');
+
+  // Store
   const lists = useStore((state) => state.lists);
   const allItems = useStore((state) => state.items);
   const toggleItem = useStore((state) => state.toggleItem);
+  const addItem = useStore((state) => state.addItem);
+  const updateItem = useStore((state) => state.updateItem);
+  const deleteItem = useStore((state) => state.deleteItem);
 
-  // Compute derived data
+  // Computed data
   const list = lists.find((l) => l.id === listId);
   const items = allItems
     .filter((item) => item.list_id === listId)
     .sort((a, b) => a.position - b.position);
 
-  // If list not found, navigate back
+  const selectedItem = selectedItemId ? items.find((i) => i.id === selectedItemId) : null;
+
+  // If list not found
   if (!list) {
     return (
       <GlassBackground>
@@ -58,13 +70,34 @@ export function ListDetail() {
   }
 
   const handleAddItem = () => {
-    // TODO: Open add item modal
-    console.log('Add item clicked');
+    setModalMode('add');
+    setSelectedItemId(null);
+    setIsItemModalOpen(true);
   };
 
   const handleItemOptions = (id: string) => {
-    // TODO: Open options menu (edit, delete)
-    console.log('Options clicked for item:', id);
+    setSelectedItemId(id);
+    setIsOptionsMenuOpen(true);
+  };
+
+  const handleEditItem = () => {
+    setModalMode('edit');
+    setIsItemModalOpen(true);
+  };
+
+  const handleDeleteItem = () => {
+    if (selectedItemId) {
+      deleteItem(selectedItemId);
+      setSelectedItemId(null);
+    }
+  };
+
+  const handleSaveItem = (text: string) => {
+    if (modalMode === 'add' && listId) {
+      addItem(listId, text);
+    } else if (modalMode === 'edit' && selectedItemId) {
+      updateItem(selectedItemId, { text });
+    }
   };
 
   const totalItems = items.length;
@@ -74,7 +107,6 @@ export function ListDetail() {
     <GlassBackground>
       {/* Header Card */}
       <GlassCard className="p-[clamp(20px,4vw,28px)] mb-[clamp(16px,3vw,24px)]">
-        {/* Back button and options */}
         <div className="flex items-center justify-between mb-4">
           <button
             onClick={() => navigate('/lists')}
@@ -88,7 +120,6 @@ export function ListDetail() {
           </button>
         </div>
 
-        {/* Title */}
         <h1 className="text-[clamp(24px,5vw,36px)] font-bold text-white mb-2 tracking-tight text-glass-primary">
           {list.emoji} {list.name}
         </h1>
@@ -96,7 +127,6 @@ export function ListDetail() {
           Zuletzt bearbeitet: {formatDate(list.updated_at)}
         </p>
 
-        {/* Progress Bar */}
         <ProgressBar current={packedItems} total={totalItems} />
       </GlassCard>
 
@@ -124,6 +154,23 @@ export function ListDetail() {
 
       {/* Add Item Button */}
       <AddItemButton onClick={handleAddItem} />
+
+      {/* Item Modal */}
+      <ItemModal
+        isOpen={isItemModalOpen}
+        onClose={() => setIsItemModalOpen(false)}
+        onSave={handleSaveItem}
+        initialText={modalMode === 'edit' ? selectedItem?.text ?? '' : ''}
+        mode={modalMode}
+      />
+
+      {/* Options Menu */}
+      <OptionsMenu
+        isOpen={isOptionsMenuOpen}
+        onClose={() => setIsOptionsMenuOpen(false)}
+        onEdit={handleEditItem}
+        onDelete={handleDeleteItem}
+      />
     </GlassBackground>
   );
 }

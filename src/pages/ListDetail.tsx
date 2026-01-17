@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, MoreVertical } from 'lucide-react';
 import { GlassBackground, GlassCard, ProgressBar } from '../components/ui';
-import { ItemRow, AddItemButton, ItemModal, OptionsMenu } from '../components/features';
+import { ItemRow, AddItemButton, ItemModal, OptionsMenu, ListModal, ListOptionsMenu } from '../components/features';
 import { useStore } from '../store/useStore';
 
 // Format date for display
@@ -27,11 +27,15 @@ export function ListDetail() {
   const navigate = useNavigate();
   const { listId } = useParams<{ listId: string }>();
 
-  // Modal state
+  // Item modal state
   const [isItemModalOpen, setIsItemModalOpen] = useState(false);
   const [isOptionsMenuOpen, setIsOptionsMenuOpen] = useState(false);
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const [modalMode, setModalMode] = useState<'add' | 'edit'>('add');
+
+  // List modal state
+  const [isListModalOpen, setIsListModalOpen] = useState(false);
+  const [isListOptionsMenuOpen, setIsListOptionsMenuOpen] = useState(false);
 
   // Store
   const lists = useStore((state) => state.lists);
@@ -40,6 +44,8 @@ export function ListDetail() {
   const addItem = useStore((state) => state.addItem);
   const updateItem = useStore((state) => state.updateItem);
   const deleteItem = useStore((state) => state.deleteItem);
+  const updateList = useStore((state) => state.updateList);
+  const deleteList = useStore((state) => state.deleteList);
 
   // Computed data
   const list = lists.find((l) => l.id === listId);
@@ -100,6 +106,28 @@ export function ListDetail() {
     }
   };
 
+  // List handlers
+  const handleListOptions = () => {
+    setIsListOptionsMenuOpen(true);
+  };
+
+  const handleEditList = () => {
+    setIsListModalOpen(true);
+  };
+
+  const handleDeleteList = () => {
+    if (listId) {
+      deleteList(listId);
+      navigate('/lists');
+    }
+  };
+
+  const handleSaveList = (name: string, emoji: string) => {
+    if (listId) {
+      updateList(listId, { name, emoji });
+    }
+  };
+
   const totalItems = items.length;
   const packedItems = items.filter((item) => item.checked).length;
 
@@ -115,7 +143,10 @@ export function ListDetail() {
             <ArrowLeft size={20} />
             <span className="text-sm font-medium">Zurück</span>
           </button>
-          <button className="text-white/50 hover:text-white/80 transition-colors p-1">
+          <button
+            onClick={handleListOptions}
+            className="text-white/50 hover:text-white/80 transition-colors p-1"
+          >
             <MoreVertical size={20} />
           </button>
         </div>
@@ -170,6 +201,24 @@ export function ListDetail() {
         onClose={() => setIsOptionsMenuOpen(false)}
         onEdit={handleEditItem}
         onDelete={handleDeleteItem}
+      />
+
+      {/* List Modal */}
+      <ListModal
+        isOpen={isListModalOpen}
+        onClose={() => setIsListModalOpen(false)}
+        onSave={handleSaveList}
+        initialName={list.name}
+        initialEmoji={list.emoji}
+        mode="edit"
+      />
+
+      {/* List Options Menu */}
+      <ListOptionsMenu
+        isOpen={isListOptionsMenuOpen}
+        onClose={() => setIsListOptionsMenuOpen(false)}
+        onEdit={handleEditList}
+        onDelete={handleDeleteList}
       />
     </GlassBackground>
   );

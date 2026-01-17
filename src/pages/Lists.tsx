@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus } from 'lucide-react';
 import { GlassBackground, GlassCard } from '../components/ui';
+import { ListModal } from '../components/features';
 import { useStore } from '../store/useStore';
 
 // Format date for display
@@ -23,12 +25,19 @@ function formatDate(dateString: string): string {
 
 export function Lists() {
   const navigate = useNavigate();
+  const [isListModalOpen, setIsListModalOpen] = useState(false);
+
   const lists = useStore((state) => state.lists);
+  const addList = useStore((state) => state.addList);
   const getListStats = useStore((state) => state.getListStats);
 
   const handleCreateList = () => {
-    // TODO: Open create list modal
-    console.log('Create list clicked');
+    setIsListModalOpen(true);
+  };
+
+  const handleSaveList = (name: string, emoji: string) => {
+    const newListId = addList(name, emoji);
+    navigate(`/lists/${newListId}`);
   };
 
   const handleListClick = (listId: string) => {
@@ -140,6 +149,14 @@ export function Lists() {
         <Plus size={20} />
         Neue Liste erstellen
       </button>
+
+      {/* List Modal */}
+      <ListModal
+        isOpen={isListModalOpen}
+        onClose={() => setIsListModalOpen(false)}
+        onSave={handleSaveList}
+        mode="add"
+      />
     </GlassBackground>
   );
 }

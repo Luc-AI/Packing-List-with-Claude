@@ -18,19 +18,82 @@ export interface Item {
   updated_at: string;
 }
 
-export interface Database {
+// Supabase Database Schema Type
+export type Database = {
   public: {
     Tables: {
       lists: {
-        Row: List;
-        Insert: Omit<List, 'id' | 'created_at' | 'updated_at'>;
-        Update: Partial<Omit<List, 'id'>>;
+        Row: {
+          id: string;
+          user_id: string;
+          name: string;
+          emoji: string;
+          color: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          name: string;
+          emoji: string;
+          color?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          name?: string;
+          emoji?: string;
+          color?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
       };
       items: {
-        Row: Item;
-        Insert: Omit<Item, 'id' | 'created_at' | 'updated_at'>;
-        Update: Partial<Omit<Item, 'id'>>;
+        Row: {
+          id: string;
+          list_id: string;
+          text: string;
+          checked: boolean;
+          position: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          list_id: string;
+          text: string;
+          checked?: boolean;
+          position: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          list_id?: string;
+          text?: string;
+          checked?: boolean;
+          position?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
       };
     };
+    Views: {
+      [_ in never]: never;
+    };
+    Functions: {
+      [_ in never]: never;
+    };
+    Enums: {
+      [_ in never]: never;
+    };
+    CompositeTypes: {
+      [_ in never]: never;
+    };
   };
-}
+};

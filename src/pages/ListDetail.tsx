@@ -118,18 +118,18 @@ export function ListDetail() {
     setIsItemModalOpen(true);
   };
 
-  const handleDeleteItem = () => {
+  const handleDeleteItem = async () => {
     if (selectedItemId) {
-      deleteItem(selectedItemId);
+      await deleteItem(selectedItemId);
       setSelectedItemId(null);
     }
   };
 
-  const handleSaveItem = (text: string) => {
+  const handleSaveItem = async (text: string) => {
     if (modalMode === 'add' && listId) {
-      addItem(listId, text);
+      await addItem(listId, text);
     } else if (modalMode === 'edit' && selectedItemId) {
-      updateItem(selectedItemId, { text });
+      await updateItem(selectedItemId, { text });
     }
   };
 
@@ -142,21 +142,21 @@ export function ListDetail() {
     setIsListModalOpen(true);
   };
 
-  const handleDeleteList = () => {
+  const handleDeleteList = async () => {
     if (listId) {
-      deleteList(listId);
+      await deleteList(listId);
       navigate('/lists');
     }
   };
 
-  const handleSaveList = (name: string, emoji: string) => {
+  const handleSaveList = async (name: string, emoji: string) => {
     if (listId) {
-      updateList(listId, { name, emoji });
+      await updateList(listId, { name, emoji });
     }
   };
 
   // DnD handler
-  const handleDragEnd = (event: DragEndEvent) => {
+  const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
 
     if (over && active.id !== over.id && listId) {
@@ -167,7 +167,7 @@ export function ListDetail() {
         const newItems = [...items];
         const [movedItem] = newItems.splice(oldIndex, 1);
         newItems.splice(newIndex, 0, movedItem);
-        reorderItems(listId, newItems.map((item) => item.id));
+        await reorderItems(listId, newItems.map((item) => item.id));
       }
     }
   };
@@ -220,7 +220,7 @@ export function ListDetail() {
                   id={item.id}
                   text={item.text}
                   checked={item.checked}
-                  onToggle={toggleItem}
+                  onToggle={(id) => toggleItem(id)}
                   onOptionsClick={handleItemOptions}
                   isLast={index === items.length - 1}
                 />

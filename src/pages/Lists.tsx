@@ -26,10 +26,11 @@ function formatDate(dateString: string): string {
 
 export function Lists() {
   const navigate = useNavigate();
-  const { signOut } = useAuth();
+  const { user, signOut } = useAuth();
   const [isListModalOpen, setIsListModalOpen] = useState(false);
 
   const lists = useStore((state) => state.lists);
+  const isLoading = useStore((state) => state.isLoading);
   const addList = useStore((state) => state.addList);
   const getListStats = useStore((state) => state.getListStats);
 
@@ -41,14 +42,35 @@ export function Lists() {
     setIsListModalOpen(true);
   };
 
-  const handleSaveList = (name: string, emoji: string) => {
-    const newListId = addList(name, emoji);
-    navigate(`/lists/${newListId}`);
+  const handleSaveList = async (name: string, emoji: string) => {
+    if (!user) return;
+    const newListId = await addList(user.id, name, emoji);
+    if (newListId) {
+      navigate(`/lists/${newListId}`);
+    }
   };
 
   const handleListClick = (listId: string) => {
     navigate(`/lists/${listId}`);
   };
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <GlassBackground>
+        <GlassCard className="p-[clamp(20px,4vw,28px)] mb-[clamp(16px,3vw,24px)]">
+          <div className="flex items-center justify-between">
+            <h1 className="text-[clamp(24px,5vw,36px)] font-bold text-glass-primary tracking-tight">
+              📦 Meine Listen
+            </h1>
+          </div>
+        </GlassCard>
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin h-8 w-8 border-4 border-white border-t-transparent rounded-full" />
+        </div>
+      </GlassBackground>
+    );
+  }
 
   return (
     <GlassBackground>

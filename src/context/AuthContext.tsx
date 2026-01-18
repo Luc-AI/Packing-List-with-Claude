@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import type { User, Session, AuthError } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
+import { useStore } from '../store/useStore';
 
 interface AuthResult {
   error: AuthError | null;
@@ -25,25 +26,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const { fetchData, clearData } = useStore.getState();
+
     // Get initial session
     supabase.auth.getSession().then(({ data: { session }, error }) => {
       if (error) {
         console.error('Error getting session:', error);
       }
-      console.log('Initial session:', session?.user?.email ?? 'none');
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
+
+      // Fetch data if user is logged in
+      if (session?.user) {
+        fetchData(session.user.id);
+      }
     });
 
     // Listen for auth changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log('Auth state changed:', event, session?.user?.email ?? 'none');
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
+
+      // Handle data fetching/clearing based on auth event
+      if (event === 'SIGNED_IN' && session?.user) {
+        fetchData(session.user.id);
+      } else if (event === 'SIGNED_OUT') {
+        clearData();
+      }
     });
 
     return () => subscription.unsubscribe();

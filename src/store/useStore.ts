@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import type { List, Item } from '../types/database';
 import { listsApi, itemsApi } from '../lib/api';
+import { useToastStore } from './useToastStore';
 
 interface PackingStore {
   // State
@@ -46,6 +47,7 @@ export const useStore = create<PackingStore>()((set, get) => ({
     const listsResult = await listsApi.fetchAll(userId);
     if (listsResult.error) {
       set({ isLoading: false, error: listsResult.error });
+      useToastStore.getState().addToast('Fehler beim Laden der Listen', 'error');
       return;
     }
 
@@ -56,6 +58,7 @@ export const useStore = create<PackingStore>()((set, get) => ({
     const itemsResult = await itemsApi.fetchAllForUser(listIds);
     if (itemsResult.error) {
       set({ isLoading: false, error: itemsResult.error });
+      useToastStore.getState().addToast('Fehler beim Laden der Items', 'error');
       return;
     }
 
@@ -81,6 +84,7 @@ export const useStore = create<PackingStore>()((set, get) => ({
     const result = await listsApi.create({ user_id: userId, name, emoji });
     if (result.error || !result.data) {
       set({ error: result.error ?? 'Failed to create list' });
+      useToastStore.getState().addToast('Fehler beim Erstellen der Liste', 'error');
       return null;
     }
 
@@ -101,6 +105,7 @@ export const useStore = create<PackingStore>()((set, get) => ({
     if (result.error) {
       // Rollback on error
       set({ lists: previousLists, error: result.error });
+      useToastStore.getState().addToast('Fehler beim Aktualisieren der Liste', 'error');
     }
   },
 
@@ -117,6 +122,9 @@ export const useStore = create<PackingStore>()((set, get) => ({
     if (result.error) {
       // Rollback on error
       set({ lists: previousLists, items: previousItems, error: result.error });
+      useToastStore.getState().addToast('Fehler beim Löschen der Liste', 'error');
+    } else {
+      useToastStore.getState().addToast('Liste gelöscht', 'success');
     }
   },
 
@@ -135,6 +143,7 @@ export const useStore = create<PackingStore>()((set, get) => ({
 
     if (result.error || !result.data) {
       set({ error: result.error ?? 'Failed to add item' });
+      useToastStore.getState().addToast('Fehler beim Hinzufügen des Items', 'error');
       return;
     }
 
@@ -154,6 +163,7 @@ export const useStore = create<PackingStore>()((set, get) => ({
     if (result.error) {
       // Rollback on error
       set({ items: previousItems, error: result.error });
+      useToastStore.getState().addToast('Fehler beim Aktualisieren des Items', 'error');
     }
   },
 
@@ -168,6 +178,7 @@ export const useStore = create<PackingStore>()((set, get) => ({
     if (result.error) {
       // Rollback on error
       set({ items: previousItems, error: result.error });
+      useToastStore.getState().addToast('Fehler beim Löschen des Items', 'error');
     }
   },
 
@@ -189,6 +200,7 @@ export const useStore = create<PackingStore>()((set, get) => ({
     if (result.error) {
       // Rollback on error
       set({ items: previousItems, error: result.error });
+      useToastStore.getState().addToast('Fehler beim Aktualisieren des Items', 'error');
     }
   },
 
@@ -215,6 +227,7 @@ export const useStore = create<PackingStore>()((set, get) => ({
     if (result.error) {
       // Rollback on error
       set({ items: previousItems, error: result.error });
+      useToastStore.getState().addToast('Fehler beim Sortieren der Items', 'error');
     }
   },
 

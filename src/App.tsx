@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import { ToastContainer } from './components/ui';
 import { Lists } from './pages/Lists';
 import { ListDetail } from './pages/ListDetail';
 import { Login } from './pages/Login';
@@ -9,6 +10,7 @@ import { ResetPassword } from './pages/ResetPassword';
 function App() {
   return (
     <AuthProvider>
+      <ToastContainer />
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<Login />} />

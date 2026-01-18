@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, LogOut } from 'lucide-react';
-import { GlassBackground, GlassCard } from '../components/ui';
-import { ListModal } from '../components/features';
+import { Plus } from 'lucide-react';
+import { GlassBackground, GlassCard, LoadingSpinner } from '../components/ui';
+import { ListModal, UserMenu } from '../components/features';
 import { useStore } from '../store/useStore';
 import { useAuth } from '../context/AuthContext';
 
@@ -26,17 +26,13 @@ function formatDate(dateString: string): string {
 
 export function Lists() {
   const navigate = useNavigate();
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
   const [isListModalOpen, setIsListModalOpen] = useState(false);
 
   const lists = useStore((state) => state.lists);
   const isLoading = useStore((state) => state.isLoading);
   const addList = useStore((state) => state.addList);
   const getListStats = useStore((state) => state.getListStats);
-
-  const handleLogout = async () => {
-    await signOut();
-  };
 
   const handleCreateList = () => {
     setIsListModalOpen(true);
@@ -66,7 +62,7 @@ export function Lists() {
           </div>
         </GlassCard>
         <div className="flex items-center justify-center py-12">
-          <div className="animate-spin h-8 w-8 border-4 border-white border-t-transparent rounded-full" />
+          <LoadingSpinner size="lg" />
         </div>
       </GlassBackground>
     );
@@ -80,13 +76,7 @@ export function Lists() {
           <h1 className="text-[clamp(24px,5vw,36px)] font-bold text-glass-primary tracking-tight">
             📦 Meine Listen
           </h1>
-          <button
-            onClick={handleLogout}
-            className="p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
-            title="Abmelden"
-          >
-            <LogOut size={20} className="text-white/80" />
-          </button>
+          <UserMenu />
         </div>
       </GlassCard>
 

@@ -1,10 +1,11 @@
+
 # Project Status
 
 > Last updated: 2025-01-15
 
-## Current Phase: Phase 2 - Supabase Setup
+## Current Phase: Phase 4 - MVP Features
 
-Phase 1 (Project Setup) is complete. The development environment is ready.
+Phases 1-3 complete. Authentication flow working, ready to build features.
 
 ---
 
@@ -19,32 +20,23 @@ Phase 1 (Project Setup) is complete. The development environment is ready.
   - [x] Folder structure created
   - [x] Utility files created (`utils.ts`, `supabase.ts`, `database.ts`)
   - [x] Environment files (`.env.example`, `.gitignore`)
-  - [x] Dev server and build verified working
+- [x] **Phase 2: Supabase Setup**
+  - [x] Supabase project created
+  - [x] Database tables (`lists`, `items`) with triggers
+  - [x] RLS policies configured (8 policies)
+  - [x] Magic Link auth enabled
+  - [x] Credentials added to `.env.local`
+- [x] **Phase 3: Core Components**
+  - [x] UI components (Button, Input, Modal, Checkbox)
+  - [x] React Router with protected routes
+  - [x] AuthContext for session management
+  - [x] Login page with Magic Link
 
 ---
 
 ## Next Steps
 
-### Phase 2: Supabase Setup (Current)
-
-| Step | Task | Description |
-|------|------|-------------|
-| 2.1 | Create Supabase project | Via supabase.com dashboard |
-| 2.2 | Create database tables | `lists` and `items` tables (SQL provided in plan) |
-| 2.3 | Configure RLS policies | Users access only their own data |
-| 2.4 | Enable Magic Link auth | Email authentication setup |
-| 2.5 | Add credentials to `.env.local` | Connect frontend to Supabase |
-
-### Phase 3: Core Components
-
-| Step | Task | Description |
-|------|------|-------------|
-| 3.1 | Create UI components | Button, Input, Modal, Checkbox |
-| 3.2 | Setup routing | React Router with protected routes |
-| 3.3 | Implement AuthContext | Session management |
-| 3.4 | Create Login page | Magic Link form |
-
-### Phase 4: MVP Features
+### Phase 4: MVP Features (Current)
 
 | Step | Task | Description |
 |------|------|-------------|
@@ -87,20 +79,30 @@ npm run lint      # ESLint check
 │   └── project_status.md
 ├── src/
 │   ├── components/
-│   │   ├── ui/           # (empty - ready for components)
-│   │   └── features/     # (empty - ready for components)
-│   ├── context/          # (empty - ready for AuthContext)
-│   ├── hooks/            # (empty - ready for hooks)
+│   │   ├── ui/
+│   │   │   ├── Button.tsx
+│   │   │   ├── Checkbox.tsx
+│   │   │   ├── Input.tsx
+│   │   │   ├── Modal.tsx
+│   │   │   └── index.ts
+│   │   ├── features/        # (ready for ListCard, ItemRow, etc.)
+│   │   └── ProtectedRoute.tsx
+│   ├── context/
+│   │   └── AuthContext.tsx
+│   ├── hooks/               # (ready for useLists, useItems)
 │   ├── lib/
-│   │   ├── supabase.ts   # Supabase client
-│   │   └── utils.ts      # cn() helper
-│   ├── pages/            # (empty - ready for pages)
+│   │   ├── supabase.ts
+│   │   └── utils.ts
+│   ├── pages/
+│   │   ├── Login.tsx
+│   │   └── Lists.tsx
 │   ├── types/
-│   │   └── database.ts   # TypeScript types
-│   ├── App.tsx           # Root component
-│   ├── main.tsx          # Entry point
-│   └── index.css         # Tailwind imports
-├── .env.example          # Environment template
+│   │   └── database.ts
+│   ├── App.tsx
+│   ├── main.tsx
+│   └── index.css
+├── .env.example
+├── .env.local              # (git-ignored)
 ├── .gitignore
 ├── package.json
 ├── postcss.config.js
@@ -112,7 +114,7 @@ npm run lint      # ESLint check
 
 ## Definition of Done (MVP)
 
-- [ ] User can log in via Magic Link
+- [x] User can log in via Magic Link
 - [ ] User can create a packing list with name, emoji, color
 - [ ] User can add items to a list
 - [ ] User can check/uncheck items

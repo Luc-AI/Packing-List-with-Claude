@@ -99,12 +99,25 @@ items
 
 ## 4. Design & UX Guidelines
 
-- **Responsive:** Mobile-first design, 320px to 1440px+
+> **Full UI documentation:** See [ui_styleguide.md](./ui_styleguide.md) for complete design system.
+
+- **Design System:** Glassmorphism with semi-transparent surfaces and blur effects
+- **Responsive:** Mobile-first design using `clamp()` for fluid sizing
 - **Aesthetic:** Minimalist, clean, functional
-- **Colors:** 12-16 preset background colors for lists (no custom color picker)
+- **Colors:** Use CSS custom properties from `src/index.css`, never hard-coded grays
+- **Text:** Always use `text-glass-*` classes on glass backgrounds for readability
 - **Updates:** Optimistic UI - update instantly, rollback on error
-- **Animations:** None in MVP (add subtle micro-interactions in v2)
 - **Browser support:** iOS Safari, Android Chrome, modern desktop browsers
+
+### Key Style Rules
+
+| Element | Correct | Wrong |
+|---------|---------|-------|
+| Text on glass | `text-glass-secondary` | `text-gray-700` |
+| Backgrounds | `GlassBackground` component | `bg-gray-50` |
+| Inputs | `bg-white/10 text-white` | `bg-white text-gray-900` |
+| Borders | `border-white/30` | `border-gray-300` |
+| Focus rings | `focus:ring-white/50` | `focus:ring-blue-500` |
 
 ---
 
@@ -112,10 +125,10 @@ items
 
 - Use semantic HTML elements (`<button>`, `<nav>`, `<main>`, `<ul>`, `<li>`)
 - All interactive elements must be keyboard accessible
-- Visible focus states using Tailwind (`focus:ring-2 focus:ring-blue-500`)
-- ARIA labels for icon-only buttons (`aria-label="Delete item"`)
+- Visible focus states using Tailwind (`focus:ring-2 focus:ring-white/50`)
+- ARIA labels or `title` for icon-only buttons
 - Form inputs must have associated `<label>` elements
-- Color contrast: minimum 4.5:1 ratio for text
+- Text shadows ensure readability on glass backgrounds
 
 ---
 
@@ -363,6 +376,7 @@ npm run lint:fix  # Auto-fix lint issues
 
 ## 14. Documentation References
 
+- **UI Style Guide:** [ui_styleguide.md](./ui_styleguide.md) - Design system, components, patterns
 - **Project Specification:** [project_spec.md](./project_spec.md)
 - **Project Status:** [project_status.md](./project_status.md)
 - **Supabase Docs:** https://supabase.com/docs
@@ -387,4 +401,5 @@ npm run lint:fix  # Auto-fix lint issues
 
 **Files to keep in sync:**
 - `Claude.md` - Architecture, tech stack, patterns
+- `ui_styleguide.md` - Design system, component patterns, styling rules
 - `project_status.md` - Progress tracking, completed tasks, current phase

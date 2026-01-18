@@ -1,5 +1,6 @@
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { GlassBackground } from './ui';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -10,9 +11,11 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="animate-spin h-8 w-8 border-4 border-blue-600 border-t-transparent rounded-full" />
-      </div>
+      <GlassBackground>
+        <div className="flex items-center justify-center min-h-[80vh]">
+          <div className="animate-spin h-8 w-8 border-4 border-white border-t-transparent rounded-full" />
+        </div>
+      </GlassBackground>
     );
   }
 

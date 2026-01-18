@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus } from 'lucide-react';
+import { Plus, LogOut } from 'lucide-react';
 import { GlassBackground, GlassCard } from '../components/ui';
 import { ListModal } from '../components/features';
 import { useStore } from '../store/useStore';
+import { useAuth } from '../context/AuthContext';
 
 // Format date for display
 function formatDate(dateString: string): string {
@@ -25,11 +26,16 @@ function formatDate(dateString: string): string {
 
 export function Lists() {
   const navigate = useNavigate();
+  const { signOut } = useAuth();
   const [isListModalOpen, setIsListModalOpen] = useState(false);
 
   const lists = useStore((state) => state.lists);
   const addList = useStore((state) => state.addList);
   const getListStats = useStore((state) => state.getListStats);
+
+  const handleLogout = async () => {
+    await signOut();
+  };
 
   const handleCreateList = () => {
     setIsListModalOpen(true);
@@ -48,9 +54,18 @@ export function Lists() {
     <GlassBackground>
       {/* Header Card */}
       <GlassCard className="p-[clamp(20px,4vw,28px)] mb-[clamp(16px,3vw,24px)]">
-        <h1 className="text-[clamp(24px,5vw,36px)] font-bold text-glass-primary tracking-tight">
-          📦 Meine Listen
-        </h1>
+        <div className="flex items-center justify-between">
+          <h1 className="text-[clamp(24px,5vw,36px)] font-bold text-glass-primary tracking-tight">
+            📦 Meine Listen
+          </h1>
+          <button
+            onClick={handleLogout}
+            className="p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
+            title="Abmelden"
+          >
+            <LogOut size={20} className="text-white/80" />
+          </button>
+        </div>
       </GlassCard>
 
       {/* Lists */}

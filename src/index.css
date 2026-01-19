@@ -12,16 +12,17 @@
   --glass-bg-7: #b8e6ed;
 
   /* Glass Effects */
-  --glass-blur: blur(20px) saturate(180%);
-  --glass-bg: rgba(255, 255, 255, 0.15);
-  --glass-bg-light: rgba(255, 255, 255, 0.12);
-  --glass-bg-hover: rgba(255, 255, 255, 0.18);
-  --glass-border: rgba(255, 255, 255, 0.3);
-  --glass-border-light: rgba(255, 255, 255, 0.25);
-  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
-  --glass-shadow-hover: 0 6px 20px rgba(0, 0, 0, 0.2);
-  --glass-inset: inset 0 1px 0 rgba(255, 255, 255, 0.5);
-  --glass-inset-light: inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  --glass-blur: blur(24px) saturate(130%);
+  --glass-bg: rgba(255, 255, 255, 0.18);
+  --glass-bg-light: rgba(255, 255, 255, 0.14);
+  --glass-bg-hover: rgba(255, 255, 255, 0.22);
+  --glass-border: rgba(255, 255, 255, 0.35);
+  --glass-border-light: rgba(255, 255, 255, 0.28);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+  --glass-shadow-hover: 0 6px 20px rgba(0, 0, 0, 0.22);
+  --glass-inset: inset 0 1px 0 rgba(255, 255, 255, 0.45);
+  --glass-inset-light: inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  --glass-scrim: rgba(0, 0, 0, 0.08);
 
   /* Accent Colors */
   --progress-gradient: linear-gradient(90deg, rgba(255, 183, 77, 0.95) 0%, rgba(255, 138, 101, 0.95) 100%);
@@ -46,7 +47,9 @@ body {
 
 /* Utility Classes for Glass Effects */
 .glass-card {
-  background: var(--glass-bg);
+  background:
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.14)),
+    var(--glass-scrim);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
   border: 1px solid var(--glass-border);
@@ -54,11 +57,13 @@ body {
 }
 
 .glass-card-light {
-  background: var(--glass-bg-light);
+  background:
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.10)),
+    var(--glass-scrim);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
   border: 1px solid var(--glass-border-light);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2), var(--glass-inset-light);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18), var(--glass-inset-light);
 }
 
 .text-glass-primary {
@@ -104,4 +109,29 @@ body {
 
 .animate-slide-down {
   animation: slide-down 0.3s ease-out;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.2s ease-out;
+}
+
+/* Desktop-specific glass enhancement for better contrast */
+@media (pointer: fine) and (min-width: 640px) {
+  :root {
+    --glass-blur: blur(28px) saturate(120%);
+    --glass-bg: rgba(255, 255, 255, 0.22);
+    --glass-bg-light: rgba(255, 255, 255, 0.17);
+    --glass-scrim: rgba(0, 0, 0, 0.10);
+  }
 }

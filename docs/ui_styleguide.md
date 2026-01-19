@@ -27,19 +27,36 @@ All colors are defined in `src/index.css`. Use these variables, not hard-coded v
 --text-secondary: rgba(255, 255, 255, 0.85);  /* Labels, body text */
 --text-muted: rgba(255, 255, 255, 0.6);       /* Timestamps, hints */
 
-/* Glass Backgrounds */
---glass-bg: rgba(255, 255, 255, 0.15);        /* Default cards */
---glass-bg-light: rgba(255, 255, 255, 0.12);  /* Light variant cards */
---glass-bg-hover: rgba(255, 255, 255, 0.18);  /* Hover states */
+/* Glass Effects */
+--glass-blur: blur(24px) saturate(130%);      /* Base blur + saturation */
+--glass-bg: rgba(255, 255, 255, 0.18);        /* Default cards */
+--glass-bg-light: rgba(255, 255, 255, 0.14);  /* Light variant cards */
+--glass-bg-hover: rgba(255, 255, 255, 0.22);  /* Hover states */
+--glass-scrim: rgba(0, 0, 0, 0.08);           /* Neutral contrast layer */
 
 /* Borders */
---glass-border: rgba(255, 255, 255, 0.3);     /* Default border */
---glass-border-light: rgba(255, 255, 255, 0.25); /* Light variant */
+--glass-border: rgba(255, 255, 255, 0.35);    /* Default border */
+--glass-border-light: rgba(255, 255, 255, 0.28); /* Light variant */
 
 /* Accent Gradients */
 --progress-gradient: linear-gradient(90deg, rgba(255, 183, 77, 0.95) 0%, rgba(255, 138, 101, 0.95) 100%);
 --check-gradient: linear-gradient(135deg, rgba(129, 199, 132, 0.95) 0%, rgba(102, 187, 106, 0.95) 100%);
 ```
+
+### 2.1.1 Desktop Enhancement
+
+On desktop (devices with precise pointers), glass effects are slightly enhanced for better contrast:
+
+```css
+@media (pointer: fine) and (min-width: 640px) {
+  --glass-blur: blur(28px) saturate(120%);
+  --glass-bg: rgba(255, 255, 255, 0.22);
+  --glass-bg-light: rgba(255, 255, 255, 0.17);
+  --glass-scrim: rgba(0, 0, 0, 0.10);
+}
+```
+
+This compensates for differences in how desktop Chrome renders `backdrop-filter` compared to mobile Safari/Chrome.
 
 ### 2.2 Tailwind Utility Classes
 
@@ -356,9 +373,415 @@ import { Plus, LogOut, Check, X } from 'lucide-react';
 
 ---
 
-## 11. Quick Reference
+## 11. Modal Windows
 
-### Common Class Combinations
+> The modal system follows Apple-inspired glassmorphism principles: soft, calm, and visually lightweight while maintaining clear hierarchy and focus.
+
+### 11.1 Design Tokens
+
+```css
+/* Modal Overlay */
+--modal-overlay: rgba(0, 0, 0, 0.4);          /* Dark scrim behind modal */
+--modal-overlay-blur: blur(4px);               /* Optional subtle blur on backdrop */
+
+/* Modal Container - uses layered glass surface */
+--modal-bg: linear-gradient(to bottom, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.14)), rgba(0, 0, 0, 0.08);
+--modal-border: rgba(255, 255, 255, 0.35);     /* Subtle white border */
+--modal-radius: 24px;                          /* Large, soft corners */
+--modal-radius-mobile: 20px;                   /* Slightly smaller on mobile */
+--modal-shadow: 0 8px 32px rgba(0, 0, 0, 0.18); /* Soft, diffused elevation */
+--modal-blur: blur(24px) saturate(130%);       /* Frosted glass effect */
+
+/* Modal Spacing */
+--modal-padding: 24px;                         /* Internal padding */
+--modal-section-gap: 20px;                     /* Vertical space between sections */
+--modal-max-width: 420px;                      /* Default max width */
+--modal-max-width-sm: 320px;                   /* Small modal variant */
+--modal-max-width-lg: 520px;                   /* Large modal variant */
+```
+
+> **Note on glass surfaces:** The modal background uses a layered approach:
+> 1. A top-to-bottom gradient (brighter top, darker bottom) for Apple-like depth
+> 2. A neutral scrim (`rgba(0, 0, 0, 0.08)`) to normalize background luminance
+> 3. Desktop browsers receive slightly enhanced values via `@media (pointer: fine)`
+
+### 11.2 Modal Structure
+
+```
+┌─────────────────────────────────────┐
+│  [X] Close button (top-right)       │  ← Optional
+├─────────────────────────────────────┤
+│  Title                              │  ← Header (bold, white)
+├─────────────────────────────────────┤
+│                                     │
+│  Content Area                       │  ← Flexible height
+│  (forms, selectors, text)           │
+│                                     │
+├─────────────────────────────────────┤
+│  [Secondary]  [Primary]             │  ← Footer actions
+└─────────────────────────────────────┘
+```
+
+### 11.3 Visual Specifications
+
+#### Container
+```tsx
+// Glass modal container classes
+className="
+  relative
+  w-full
+  max-w-md
+  mx-4
+  glass-card
+  rounded-[24px]
+  sm:rounded-[24px]
+  p-6
+  animate-slide-up
+"
+style={{
+  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+}}
+```
+
+#### Overlay (Backdrop)
+```tsx
+// Full-screen overlay
+className="
+  fixed
+  inset-0
+  z-50
+  flex
+  items-end              /* Mobile: bottom sheet */
+  sm:items-center        /* Desktop: centered */
+  justify-center
+"
+
+// Dark scrim
+<div className="absolute inset-0 bg-black/40" />
+```
+
+#### Typography Hierarchy
+
+| Element | Style | Class |
+|---------|-------|-------|
+| Modal title | Bold, white, 18-20px | `text-lg font-bold text-white` |
+| Section labels | Medium, 85% white, 14px | `text-sm font-medium text-glass-secondary` |
+| Input text | Regular, white, 15px | `text-white` |
+| Placeholder | Regular, 50% white | `placeholder-white/50` |
+| Helper text | Regular, 60% white, 13px | `text-sm text-glass-muted` |
+
+### 11.4 Interactive Elements
+
+#### Close Button (X)
+```tsx
+<button
+  onClick={onClose}
+  className="
+    absolute
+    top-4
+    right-4
+    p-1
+    text-white/50
+    hover:text-white/80
+    transition-colors
+  "
+>
+  <X size={20} />
+</button>
+```
+
+#### Form Inputs
+```tsx
+<input
+  className="
+    w-full
+    px-4
+    py-3
+    rounded-xl
+    bg-white/10
+    border
+    border-white/20
+    text-white
+    placeholder-white/50
+    focus:outline-none
+    focus:ring-2
+    focus:ring-white/30
+    focus:border-transparent
+    transition-all
+  "
+  placeholder="z.B. Sommerurlaub 2025"
+/>
+```
+
+#### Button Pair (Footer Actions)
+```tsx
+<div className="flex gap-3 mt-6">
+  {/* Secondary / Cancel */}
+  <button
+    onClick={onClose}
+    className="
+      flex-1
+      px-4
+      py-3
+      rounded-xl
+      bg-white/10
+      text-white
+      font-medium
+      hover:bg-white/15
+      transition-colors
+    "
+  >
+    Abbrechen
+  </button>
+
+  {/* Primary / Confirm */}
+  <button
+    onClick={onSubmit}
+    className="
+      flex-1
+      px-4
+      py-3
+      rounded-xl
+      bg-white/20
+      text-white
+      font-medium
+      hover:bg-white/25
+      transition-colors
+    "
+  >
+    Erstellen
+  </button>
+</div>
+```
+
+#### Icon/Emoji Selector Grid
+```tsx
+<div className="grid grid-cols-8 gap-2">
+  {emojis.map((emoji) => (
+    <button
+      key={emoji}
+      onClick={() => setSelected(emoji)}
+      className={`
+        w-10
+        h-10
+        rounded-lg
+        flex
+        items-center
+        justify-center
+        text-xl
+        transition-all
+        ${selected === emoji
+          ? 'bg-white/25 ring-2 ring-white/40'
+          : 'bg-white/10 hover:bg-white/15'
+        }
+      `}
+    >
+      {emoji}
+    </button>
+  ))}
+</div>
+```
+
+### 11.5 Animation
+
+#### Slide Up (Mobile-first)
+```css
+@keyframes slide-up {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s ease-out;
+}
+```
+
+#### Fade In (Desktop alternative)
+```css
+@keyframes fade-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+```
+
+### 11.6 Responsive Behavior
+
+| Breakpoint | Behavior |
+|------------|----------|
+| Mobile (<640px) | Bottom sheet, rounded top corners only, full width minus margins |
+| Desktop (≥640px) | Centered, fully rounded, max-width constrained |
+
+```tsx
+// Responsive modal positioning
+className="
+  w-full
+  sm:max-w-md
+  mx-0
+  sm:mx-4
+  rounded-t-[24px]
+  sm:rounded-[24px]
+  mb-0
+  sm:mb-0
+"
+```
+
+### 11.7 Modal Variants
+
+| Variant | Max Width | Use Case |
+|---------|-----------|----------|
+| Small | 320px | Confirmations, simple alerts |
+| Default | 420px | Forms, selections |
+| Large | 520px | Multi-step flows, complex forms |
+
+### 11.8 Accessibility
+
+- **Focus trap**: Tab cycles within modal only
+- **Escape to close**: `onKeyDown` handler for Escape key
+- **Click outside**: Backdrop click closes modal
+- **ARIA attributes**: `role="dialog"`, `aria-modal="true"`, `aria-labelledby`
+- **Auto-focus**: First interactive element receives focus on open
+
+### 11.9 Complete Modal Example
+
+```tsx
+import { createPortal } from 'react-dom';
+
+function Modal({ isOpen, onClose, title, children, onSubmit }) {
+  if (!isOpen) return null;
+
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[9999] flex items-center justify-center"
+      onClick={(e) => e.target === e.currentTarget && onClose()}
+    >
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+
+      {/* Modal Container */}
+      <div
+        className="
+          relative
+          w-[90%]
+          max-w-md
+          glass-card
+          rounded-[24px]
+          p-6
+          animate-fade-in
+        "
+        style={{ boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)' }}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="text-lg font-bold text-white">{title}</h2>
+          <button
+            onClick={onClose}
+            className="p-1 text-white/50 hover:text-white/80 transition-colors"
+          >
+            <X size={20} />
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="space-y-5">
+          {children}
+        </div>
+
+        {/* Footer */}
+        <div className="flex gap-3 mt-6">
+          <button
+            onClick={onClose}
+            className="flex-1 px-4 py-3 rounded-xl bg-white/10 text-white font-medium hover:bg-white/15 transition-colors"
+          >
+            Abbrechen
+          </button>
+          <button
+            onClick={onSubmit}
+            className="flex-1 px-4 py-3 rounded-xl bg-white/20 text-white font-medium hover:bg-white/25 transition-colors"
+          >
+            Erstellen
+          </button>
+        </div>
+      </div>
+    </div>,
+    document.body
+  );
+}
+```
+
+### 11.10 Critical: Portal Requirement
+
+> **PFLICHT:** Alle Modals MÜSSEN mit React Portal gerendert werden.
+
+#### Problem: Stacking Context
+
+CSS-Eigenschaften wie `backdrop-filter`, `transform`, `opacity`, oder `filter` auf Parent-Elementen erstellen einen neuen **Stacking Context**. Ein `z-index` innerhalb dieses Contexts kann NIEMALS über Elemente außerhalb hinausragen - egal wie hoch der Wert ist.
+
+```
+❌ FALSCH - Modal als Child:
+┌─────────────────────────────────────────┐
+│ <GlassCard>        ← backdrop-filter    │
+│   <button />         = neuer Stacking   │
+│   <Modal z=9999 />   Context!           │
+│ </GlassCard>                            │
+│                                         │
+│ → Modal erscheint HINTER anderen        │
+│   Elementen trotz z-index: 9999         │
+└─────────────────────────────────────────┘
+
+✅ RICHTIG - Modal via Portal:
+┌─────────────────────────────────────────┐
+│ <GlassCard>                             │
+│   <button />                            │
+│ </GlassCard>                            │
+│ ...                                     │
+│ <body>                                  │
+│   <Modal z=9999 />  ← direkt in body    │
+│ </body>                                 │
+│                                         │
+│ → Modal erscheint ÜBER allem            │
+└─────────────────────────────────────────┘
+```
+
+#### Lösung: React Portal
+
+```tsx
+import { createPortal } from 'react-dom';
+
+function MyModal({ isOpen, onClose, children }) {
+  if (!isOpen) return null;
+
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center">
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+      {/* Modal */}
+      <div className="relative glass-card rounded-[24px] p-6">
+        {children}
+      </div>
+    </div>,
+    document.body
+  );
+}
+```
+
+#### Checkliste für neue Modals
+
+- [ ] `createPortal` aus `'react-dom'` importiert
+- [ ] Modal-JSX in `createPortal(..., document.body)` gewrappt
+- [ ] `z-index: 9999` oder höher gesetzt
+- [ ] Getestet: Modal erscheint ÜBER allen UI-Elementen
+
+---
+
+## 12. Quick Reference
+
+### 12.1 Common Class Combinations
 
 ```css
 /* Glass button */
@@ -374,8 +797,30 @@ cursor-pointer transition-all duration-200 hover:bg-white/[0.18] hover:-translat
 bg-white/12 border-2 border-dashed border-white/35 hover:bg-white/18 hover:border-white/50
 ```
 
-### Import Pattern
+### 12.2 Import Pattern
 
 ```tsx
-import { Button, Input, GlassBackground, GlassCard } from '../components/ui';
+import { Button, Input, GlassBackground, GlassCard, Modal } from '../components/ui';
+```
+
+### 12.3 Modal Quick Reference
+
+```css
+/* Modal overlay */
+fixed inset-0 z-50 flex items-end sm:items-center justify-center
+
+/* Modal backdrop */
+absolute inset-0 bg-black/40
+
+/* Modal container */
+relative w-full sm:max-w-md mx-0 sm:mx-4 glass-card rounded-t-[24px] sm:rounded-[24px] p-6 animate-slide-up
+
+/* Modal button pair */
+flex gap-3 mt-6
+
+/* Secondary button */
+flex-1 px-4 py-3 rounded-xl bg-white/10 text-white font-medium hover:bg-white/15
+
+/* Primary button */
+flex-1 px-4 py-3 rounded-xl bg-white/20 text-white font-medium hover:bg-white/25
 ```

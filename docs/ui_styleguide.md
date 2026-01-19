@@ -639,7 +639,66 @@ className="
 | Default | 420px | Forms, selections |
 | Large | 520px | Multi-step flows, complex forms |
 
-### 11.8 Accessibility
+### 11.8 Modal Backdrop Styles
+
+> **WICHTIG für Claude/AI:** Bei der Implementierung eines neuen Modals MUSS zuerst gefragt werden, welcher Backdrop-Stil verwendet werden soll.
+
+There are **two backdrop styles** based on context:
+
+#### Style A: Global Modal (UserMenu Style)
+**Use when:** Background context is NOT relevant (creating new items, user settings, account actions)
+
+```tsx
+{/* Backdrop - darker with blur */}
+<div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+```
+
+| Property | Value |
+|----------|-------|
+| Opacity | 60% (`bg-black/60`) |
+| Blur | 4px (`backdrop-blur-sm`) |
+| Effect | Fully obscures background, focuses attention on modal |
+
+**Examples:** UserMenu, ListModal (add mode), confirmation dialogs
+
+#### Style B: Contextual Modal (Edit Item/List Style)
+**Use when:** Background context IS helpful (editing existing items, seeing what you're modifying)
+
+```tsx
+{/* Backdrop - lighter, no blur */}
+<div className="absolute inset-0 bg-black/40" />
+```
+
+| Property | Value |
+|----------|-------|
+| Opacity | 40% (`bg-black/40`) |
+| Blur | None |
+| Effect | Background remains visible, maintains spatial awareness |
+
+**Examples:** ItemModal, ListModal (edit mode), OptionsMenu, ListOptionsMenu
+
+#### Decision Checklist for New Modals
+
+Ask: *"Does the user need to see the background while this modal is open?"*
+
+- **YES** → Use Style B (40%, no blur)
+- **NO** → Use Style A (60% + blur)
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  NEW MODAL IMPLEMENTATION                               │
+│                                                         │
+│  Q: Which backdrop style should be used?                │
+│                                                         │
+│  [ ] Style A: Global (60% + blur)                       │
+│      → UserMenu, Create New, Account, Settings          │
+│                                                         │
+│  [ ] Style B: Contextual (40%, no blur)                 │
+│      → Edit Item, Edit List, Options Menu               │
+└─────────────────────────────────────────────────────────┘
+```
+
+### 11.9 Accessibility
 
 - **Focus trap**: Tab cycles within modal only
 - **Escape to close**: `onKeyDown` handler for Escape key
@@ -647,7 +706,7 @@ className="
 - **ARIA attributes**: `role="dialog"`, `aria-modal="true"`, `aria-labelledby`
 - **Auto-focus**: First interactive element receives focus on open
 
-### 11.9 Complete Modal Example
+### 11.10 Complete Modal Example
 
 ```tsx
 import { createPortal } from 'react-dom';
@@ -714,7 +773,7 @@ function Modal({ isOpen, onClose, title, children, onSubmit }) {
 }
 ```
 
-### 11.10 Critical: Portal Requirement
+### 11.11 Critical: Portal Requirement
 
 > **PFLICHT:** Alle Modals MÜSSEN mit React Portal gerendert werden.
 

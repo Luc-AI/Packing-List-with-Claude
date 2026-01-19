@@ -64,11 +64,11 @@ export function ListModal({
       className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+      {/* Backdrop - darker with blur for 'add', lighter for 'edit' */}
+      <div className={`absolute inset-0 ${mode === 'add' ? 'bg-black/60 backdrop-blur-sm' : 'bg-black/40'}`} />
 
       {/* Modal */}
-      <div className="relative w-full sm:max-w-md mx-0 sm:mx-4 glass-card rounded-t-[24px] sm:rounded-[24px] p-6 animate-slide-up">
+      <div className="relative w-full sm:max-w-md mx-0 sm:mx-4 glass-card rounded-t-[24px] sm:rounded-[24px] p-6 animate-fade-in">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-semibold text-white text-glass-primary">

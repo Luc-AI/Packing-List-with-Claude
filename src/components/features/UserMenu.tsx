@@ -40,35 +40,17 @@ export function UserMenu() {
 
       {isOpen && createPortal(
         <div
-          className="fixed inset-0 z-[9999] flex items-center justify-center"
+          className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center"
           onClick={(e) => e.target === e.currentTarget && setIsOpen(false)}
           role="dialog"
           aria-modal="true"
           aria-labelledby="user-modal-title"
         >
-          {/* Backdrop - soft dimming with blur like iOS/macOS */}
-          <div
-            className="absolute inset-0"
-            style={{
-              backgroundColor: 'rgba(0, 0, 0, 0.35)',
-              backdropFilter: 'blur(8px)',
-              WebkitBackdropFilter: 'blur(8px)',
-            }}
-          />
+          {/* Backdrop */}
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
 
-          {/* Modal Container - true center positioning */}
-          <div
-            className="relative w-[90%] max-w-[420px] mx-auto animate-fade-in"
-            style={{
-              background: 'linear-gradient(to bottom, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.14)), rgba(0, 0, 0, 0.08)',
-              backdropFilter: 'blur(24px) saturate(130%)',
-              WebkitBackdropFilter: 'blur(24px) saturate(130%)',
-              borderRadius: '24px',
-              border: '1px solid rgba(255, 255, 255, 0.28)',
-              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.4)',
-              padding: '24px',
-            }}
-          >
+          {/* Modal Container */}
+          <div className="relative w-full sm:max-w-md mx-0 sm:mx-4 glass-card rounded-t-[24px] sm:rounded-[24px] p-6 animate-fade-in">
             {/* Header */}
             <div className="flex items-center justify-between mb-5">
               <h2
@@ -88,13 +70,7 @@ export function UserMenu() {
             </div>
 
             {/* User Info */}
-            <div
-              className="mb-6 p-4 rounded-xl"
-              style={{
-                background: 'rgba(255, 255, 255, 0.08)',
-                border: '1px solid rgba(255, 255, 255, 0.15)',
-              }}
-            >
+            <div className="mb-6 p-4 rounded-xl bg-white/10 border border-white/15">
               <p className="text-sm text-white/60 mb-1">Angemeldet als</p>
               <p
                 className="text-white font-medium truncate"
@@ -108,23 +84,13 @@ export function UserMenu() {
             <div className="flex gap-3">
               <button
                 onClick={() => setIsOpen(false)}
-                className="flex-1 px-4 py-3 rounded-xl text-white font-medium transition-colors"
-                style={{
-                  background: 'rgba(255, 255, 255, 0.1)',
-                }}
-                onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)'}
-                onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'}
+                className="flex-1 px-4 py-3 rounded-xl bg-white/10 text-white font-medium hover:bg-white/15 transition-colors"
               >
                 Abbrechen
               </button>
               <button
                 onClick={handleLogout}
-                className="flex-1 px-4 py-3 rounded-xl text-white font-medium transition-colors flex items-center justify-center gap-2"
-                style={{
-                  background: 'rgba(255, 255, 255, 0.18)',
-                }}
-                onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.25)'}
-                onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.18)'}
+                className="flex-1 px-4 py-3 rounded-xl bg-white/20 text-white font-medium hover:bg-white/25 transition-colors flex items-center justify-center gap-2"
               >
                 <LogOut size={18} />
                 Abmelden

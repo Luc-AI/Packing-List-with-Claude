@@ -46,7 +46,7 @@ export function ListOptionsMenu({ isOpen, onClose, onEdit, onDelete }: ListOptio
       {/* Menu */}
       <div
         ref={menuRef}
-        className="relative w-full sm:max-w-xs mx-0 sm:mx-4 mb-0 sm:mb-0 glass-card rounded-t-[20px] sm:rounded-[20px] overflow-hidden animate-slide-up"
+        className="relative w-full sm:max-w-xs mx-0 sm:mx-4 mb-0 sm:mb-0 glass-card rounded-t-[20px] sm:rounded-[20px] overflow-hidden animate-fade-in"
       >
         <button
           onClick={() => {

@@ -70,6 +70,20 @@ export const listsApi = {
     }
     return { data: undefined, error: null };
   },
+
+  async touchTimestamp(id: string): Promise<ApiResult<List>> {
+    const { data, error } = await supabase
+      .from('lists')
+      .update({ updated_at: new Date().toISOString() })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      return { data: null, error: error.message };
+    }
+    return { data, error: null };
+  },
 };
 
 // Items API
@@ -166,6 +180,19 @@ export const itemsApi = {
       if (error) {
         return { data: null, error: error.message };
       }
+    }
+    return { data: undefined, error: null };
+  },
+
+  async resetChecked(listId: string): Promise<ApiResult<void>> {
+    const { error } = await supabase
+      .from('items')
+      .update({ checked: false })
+      .eq('list_id', listId)
+      .eq('checked', true);
+
+    if (error) {
+      return { data: null, error: error.message };
     }
     return { data: undefined, error: null };
   },

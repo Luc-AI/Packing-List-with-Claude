@@ -16,7 +16,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { GlassBackground, GlassCard, ProgressBar } from '../components/ui';
-import { SortableItemRow, AddItemButton, ItemModal, OptionsMenu, ListModal, ListOptionsMenu } from '../components/features';
+import { SortableItemRow, AddItemButton, ItemModal, OptionsMenu, ListModal, ListOptionsMenu, ResetConfirmModal } from '../components/features';
 import { useStore } from '../store/useStore';
 
 // Format date for display
@@ -50,6 +50,7 @@ export function ListDetail() {
   // List modal state
   const [isListModalOpen, setIsListModalOpen] = useState(false);
   const [isListOptionsMenuOpen, setIsListOptionsMenuOpen] = useState(false);
+  const [isResetModalOpen, setIsResetModalOpen] = useState(false);
 
   // Store
   const lists = useStore((state) => state.lists);
@@ -61,6 +62,7 @@ export function ListDetail() {
   const updateList = useStore((state) => state.updateList);
   const deleteList = useStore((state) => state.deleteList);
   const reorderItems = useStore((state) => state.reorderItems);
+  const resetListItems = useStore((state) => state.resetListItems);
 
   // DnD sensors
   const sensors = useSensors(
@@ -155,6 +157,12 @@ export function ListDetail() {
     }
   };
 
+  const handleResetItems = async () => {
+    if (listId) {
+      await resetListItems(listId);
+    }
+  };
+
   // DnD handler
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
@@ -202,7 +210,11 @@ export function ListDetail() {
           Zuletzt bearbeitet: {formatDate(list.updated_at)}
         </p>
 
-        <ProgressBar current={packedItems} total={totalItems} />
+        <ProgressBar
+          current={packedItems}
+          total={totalItems}
+          onReset={() => setIsResetModalOpen(true)}
+        />
       </GlassCard>
 
       {/* Items List */}
@@ -271,6 +283,15 @@ export function ListDetail() {
         onClose={() => setIsListOptionsMenuOpen(false)}
         onEdit={handleEditList}
         onDelete={handleDeleteList}
+      />
+
+      {/* Reset Confirm Modal */}
+      <ResetConfirmModal
+        isOpen={isResetModalOpen}
+        onClose={() => setIsResetModalOpen(false)}
+        onConfirm={handleResetItems}
+        checkedCount={packedItems}
+        totalCount={totalItems}
       />
     </GlassBackground>
   );

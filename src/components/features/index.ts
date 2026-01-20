@@ -6,3 +6,4 @@ export { OptionsMenu } from './OptionsMenu';
 export { ListModal } from './ListModal';
 export { ListOptionsMenu } from './ListOptionsMenu';
 export { UserMenu } from './UserMenu';
+export { ResetConfirmModal } from './ResetConfirmModal';

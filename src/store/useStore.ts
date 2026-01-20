@@ -27,6 +27,7 @@ interface PackingStore {
   toggleItem: (id: string) => Promise<void>;
   getItemsByListId: (listId: string) => Item[];
   reorderItems: (listId: string, itemIds: string[]) => Promise<void>;
+  resetListItems: (listId: string) => Promise<void>;
 
   // Stats
   getListStats: (listId: string) => { total: number; packed: number };
@@ -148,9 +149,23 @@ export const useStore = create<PackingStore>()((set, get) => ({
     }
 
     set((state) => ({ items: [...state.items, result.data!] }));
+
+    // Touch list timestamp
+    const listResult = await listsApi.touchTimestamp(listId);
+    if (listResult.data) {
+      set((state) => ({
+        lists: state.lists.map((list) =>
+          list.id === listId ? { ...list, updated_at: listResult.data!.updated_at } : list
+        ),
+      }));
+    }
   },
 
   updateItem: async (id, updates) => {
+    // Get item for list_id before update
+    const item = get().items.find((i) => i.id === id);
+    const listId = item?.list_id;
+
     // Optimistic update
     const previousItems = get().items;
     set((state) => ({
@@ -164,10 +179,27 @@ export const useStore = create<PackingStore>()((set, get) => ({
       // Rollback on error
       set({ items: previousItems, error: result.error });
       useToastStore.getState().addToast('Fehler beim Aktualisieren des Items', 'error');
+      return;
+    }
+
+    // Touch list timestamp only when text is edited (not for checked/position changes)
+    if (listId && updates.text !== undefined) {
+      const listResult = await listsApi.touchTimestamp(listId);
+      if (listResult.data) {
+        set((state) => ({
+          lists: state.lists.map((list) =>
+            list.id === listId ? { ...list, updated_at: listResult.data!.updated_at } : list
+          ),
+        }));
+      }
     }
   },
 
   deleteItem: async (id) => {
+    // Get list_id before deletion
+    const item = get().items.find((i) => i.id === id);
+    const listId = item?.list_id;
+
     // Optimistic update
     const previousItems = get().items;
     set((state) => ({
@@ -179,6 +211,19 @@ export const useStore = create<PackingStore>()((set, get) => ({
       // Rollback on error
       set({ items: previousItems, error: result.error });
       useToastStore.getState().addToast('Fehler beim Löschen des Items', 'error');
+      return;
+    }
+
+    // Touch list timestamp
+    if (listId) {
+      const listResult = await listsApi.touchTimestamp(listId);
+      if (listResult.data) {
+        set((state) => ({
+          lists: state.lists.map((list) =>
+            list.id === listId ? { ...list, updated_at: listResult.data!.updated_at } : list
+          ),
+        }));
+      }
     }
   },
 
@@ -228,6 +273,25 @@ export const useStore = create<PackingStore>()((set, get) => ({
       // Rollback on error
       set({ items: previousItems, error: result.error });
       useToastStore.getState().addToast('Fehler beim Sortieren der Items', 'error');
+    }
+  },
+
+  resetListItems: async (listId) => {
+    // Optimistic update
+    const previousItems = get().items;
+    set((state) => ({
+      items: state.items.map((item) =>
+        item.list_id === listId ? { ...item, checked: false } : item
+      ),
+    }));
+
+    const result = await itemsApi.resetChecked(listId);
+    if (result.error) {
+      // Rollback on error
+      set({ items: previousItems, error: result.error });
+      useToastStore.getState().addToast('Fehler beim Zurücksetzen der Items', 'error');
+    } else {
+      useToastStore.getState().addToast('Items zurückgesetzt', 'success');
     }
   },
 

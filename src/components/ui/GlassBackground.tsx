@@ -29,7 +29,7 @@ export function GlassBackground({ children }: { children: React.ReactNode }) {
 
       {/* Content */}
       <div className="relative min-h-screen p-[clamp(20px,5vw,32px)] px-[clamp(12px,4vw,16px)] flex justify-center items-start">
-        <div className="max-w-[640px] w-full">{children}</div>
+        <div className="max-w-[512px] w-full">{children}</div>
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { User, LogOut, X } from 'lucide-react';
+import { LogOut, X } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 export function UserMenu() {
@@ -28,14 +28,31 @@ export function UserMenu() {
     await signOut();
   };
 
+  // Avatar fallback: first letter of email
+  const initial = user?.email?.charAt(0).toUpperCase() || '?';
+  const avatarUrl = user?.user_metadata?.avatar_url || user?.user_metadata?.picture;
+
   return (
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className="p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
+        className="w-12 h-12 rounded-full overflow-hidden bg-white/20 hover:bg-white/30 transition-all ring-2 ring-white/30 hover:ring-white/50 flex items-center justify-center shrink-0"
         title="Benutzermenu"
       >
-        <User size={20} className="text-white/80" />
+        {avatarUrl ? (
+          <img
+            src={avatarUrl}
+            alt="Profilbild"
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <span
+            className="text-white font-bold text-lg"
+            style={{ textShadow: 'var(--text-shadow-light)' }}
+          >
+            {initial}
+          </span>
+        )}
       </button>
 
       {isOpen && createPortal(

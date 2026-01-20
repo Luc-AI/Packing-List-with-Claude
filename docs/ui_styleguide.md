@@ -43,20 +43,60 @@ All colors are defined in `src/index.css`. Use these variables, not hard-coded v
 --check-gradient: linear-gradient(135deg, rgba(129, 199, 132, 0.95) 0%, rgba(102, 187, 106, 0.95) 100%);
 ```
 
-### 2.1.1 Desktop Enhancement
+### 2.1.1 Desktop Enhancement - Liquid Glass System
 
-On desktop (devices with precise pointers), glass effects are slightly enhanced for better contrast:
+On desktop browsers, glass effects are **significantly enhanced** to compensate for reduced `backdrop-filter` effectiveness in Chrome. This creates an Apple-like "liquid glass" effect with high readability.
+
+#### Desktop vs Mobile Values
+
+| Token | Mobile | Desktop | Purpose |
+|-------|--------|---------|---------|
+| `--glass-gradient-top` | 0.22 | 0.38 | Card top gradient |
+| `--glass-gradient-bottom` | 0.14 | 0.28 | Card bottom gradient |
+| `--glass-gradient-light-top` | 0.16 | 0.32 | Light card top |
+| `--glass-gradient-light-bottom` | 0.10 | 0.22 | Light card bottom |
+| `--glass-scrim` | 0.08 | 0.12 | Background contrast layer |
+| `--glass-bg-dashed` | 0.12 | 0.20 | Dashed button background |
+| `--glass-progress-track` | 0.20 | 0.28 | Progress bar track |
+
+#### CSS Implementation
 
 ```css
 @media (pointer: fine) and (min-width: 640px) {
-  --glass-blur: blur(28px) saturate(120%);
-  --glass-bg: rgba(255, 255, 255, 0.22);
-  --glass-bg-light: rgba(255, 255, 255, 0.17);
-  --glass-scrim: rgba(0, 0, 0, 0.10);
+  :root {
+    --glass-blur: blur(28px) saturate(120%);
+    --glass-scrim: rgba(0, 0, 0, 0.12);
+
+    /* Enhanced glass gradients for desktop readability */
+    --glass-gradient-top: rgba(255, 255, 255, 0.38);
+    --glass-gradient-bottom: rgba(255, 255, 255, 0.28);
+    --glass-gradient-light-top: rgba(255, 255, 255, 0.32);
+    --glass-gradient-light-bottom: rgba(255, 255, 255, 0.22);
+
+    /* Enhanced dashed button for desktop */
+    --glass-bg-dashed: rgba(255, 255, 255, 0.20);
+    --glass-bg-dashed-hover: rgba(255, 255, 255, 0.28);
+
+    /* Enhanced progress track */
+    --glass-progress-track: rgba(255, 255, 255, 0.28);
+  }
 }
 ```
 
-This compensates for differences in how desktop Chrome renders `backdrop-filter` compared to mobile Safari/Chrome.
+#### Important Rule
+
+**NEVER hardcode opacity values** in components. Always use CSS variables so desktop enhancement applies automatically:
+
+```tsx
+// ❌ BAD - hardcoded, won't get desktop enhancement
+style={{ background: 'rgba(255, 255, 255, 0.12)' }}
+
+// ✅ GOOD - uses CSS variable, desktop enhancement automatic
+style={{ background: 'var(--glass-bg-dashed)' }}
+
+// ✅ BEST - use utility class
+className="glass-button-dashed"
+```
 
 ### 2.2 Tailwind Utility Classes
 
@@ -852,9 +892,19 @@ w-full px-3 py-2 rounded-lg bg-white/10 border border-white/30 text-white placeh
 /* Clickable card */
 cursor-pointer transition-all duration-200 hover:bg-white/[0.18] hover:-translate-y-0.5
 
-/* Dashed add button */
-bg-white/12 border-2 border-dashed border-white/35 hover:bg-white/18 hover:border-white/50
+/* Dashed add button - USE CSS CLASS instead of inline styles */
+glass-button-dashed
 ```
+
+### 12.1.1 CSS Utility Classes (Desktop-Enhanced)
+
+These classes automatically apply desktop liquid glass enhancement:
+
+| Class | Purpose |
+|-------|---------|
+| `.glass-card` | Default card with gradient background |
+| `.glass-card-light` | Lighter variant for list items |
+| `.glass-button-dashed` | Dashed border button (e.g., "Add item") |
 
 ### 12.2 Import Pattern
 

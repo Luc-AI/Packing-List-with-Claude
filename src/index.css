@@ -62,12 +62,14 @@ html, body {
 }
 
 /* Dynamic viewport height for mobile browsers */
+/* Use 100lvh (large viewport) for fixed backgrounds to prevent jumping on iOS Safari */
+/* 100dvh causes layout shifts when address bar shows/hides */
 :root {
-  --app-height: 100dvh;
+  --app-height: 100lvh;
 }
 
-/* Fallback for browsers without dvh support */
-@supports not (height: 100dvh) {
+/* Fallback for browsers without lvh support */
+@supports not (height: 100lvh) {
   :root {
     --app-height: 100vh;
   }

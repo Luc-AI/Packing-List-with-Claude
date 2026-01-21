@@ -166,6 +166,22 @@ body {
   animation: fade-in 0.2s ease-out;
 }
 
+/* Section collapse/expand animation */
+.section-content {
+  overflow: hidden;
+  transition: max-height 0.3s ease-out, opacity 0.2s ease-out;
+}
+
+.section-content.collapsed {
+  max-height: 0;
+  opacity: 0;
+}
+
+.section-content.expanded {
+  max-height: 2000px;
+  opacity: 1;
+}
+
 /* Desktop-specific glass enhancement for better contrast (Liquid Glass) */
 @media (pointer: fine) and (min-width: 640px) {
   :root {

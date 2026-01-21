@@ -1,15 +1,18 @@
+import { useState } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { GripVertical, MoreVertical, Check } from 'lucide-react';
 import { cn } from '../../lib/utils';
+import { ItemModal } from './ItemModal';
+import { ItemOptionsMenu } from './ItemOptionsMenu';
 
 interface SortableItemRowProps {
   id: string;
   text: string;
   checked: boolean;
   onToggle: (id: string) => void;
-  onOptionsClick?: (id: string) => void;
-  isLast?: boolean;
+  onUpdateText: (text: string) => void;
+  onDelete: () => void;
 }
 
 export function SortableItemRow({
@@ -17,9 +20,12 @@ export function SortableItemRow({
   text,
   checked,
   onToggle,
-  onOptionsClick,
-  isLast = false,
+  onUpdateText,
+  onDelete,
 }: SortableItemRowProps) {
+  const [isOptionsMenuOpen, setIsOptionsMenuOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
   const {
     attributes,
     listeners,
@@ -41,67 +47,68 @@ export function SortableItemRow({
       ref={setNodeRef}
       style={style}
       className={cn(
-        'flex items-center p-[clamp(14px,3vw,18px)] px-[clamp(14px,3vw,20px)] cursor-pointer transition-colors duration-200 min-h-[56px]',
-        checked ? 'bg-white/[0.08]' : 'hover:bg-white/[0.05]',
-        !isLast && 'border-b border-white/15',
-        isDragging && 'glass-card rounded-xl'
+        'group flex items-center gap-3 py-3 px-4 hover:bg-white/5 transition-colors rounded-xl',
+        isDragging && 'bg-white/10 rounded-xl'
       )}
-      onClick={() => onToggle(id)}
     >
       {/* Drag Handle */}
-      <div
-        className="mr-[clamp(8px,2vw,12px)] text-white/40 cursor-grab active:cursor-grabbing flex items-center shrink-0 touch-none"
-        onClick={(e) => e.stopPropagation()}
+      <button
+        className="text-white/30 cursor-grab hover:text-white/60 opacity-0 group-hover:opacity-100 transition-opacity touch-none"
         {...attributes}
         {...listeners}
       >
-        <GripVertical size={20} />
-      </div>
+        <GripVertical size={16} />
+      </button>
 
       {/* Checkbox */}
-      <div
-        className={cn(
-          'w-[clamp(24px,4vw,26px)] h-[clamp(24px,4vw,26px)] rounded-[9px] flex items-center justify-center mr-[clamp(10px,2.5vw,14px)] shrink-0 transition-all duration-200'
-        )}
-        style={
-          checked
-            ? {
-                background: 'var(--check-gradient)',
-                boxShadow: 'var(--check-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.3)',
-              }
-            : {
-                background: 'rgba(255, 255, 255, 0.08)',
-                border: '2.5px solid rgba(255, 255, 255, 0.4)',
-                boxShadow: 'inset 0 2px 4px rgba(0, 0, 0, 0.1)',
-              }
-        }
-      >
-        {checked && <Check size={17} color="white" strokeWidth={3} />}
-      </div>
-
-      {/* Item Text */}
-      <span
-        className={cn(
-          'flex-1 text-[clamp(14px,3vw,16px)] transition-all duration-200 break-words',
-          checked
-            ? 'text-glass-muted line-through decoration-white/40 font-normal'
-            : 'text-white font-medium'
-        )}
-        style={{ textShadow: '0 1px 4px rgba(0, 0, 0, 0.4)' }}
-      >
-        {text}
-      </span>
-
-      {/* More Options Button */}
       <button
-        className="bg-transparent border-none cursor-pointer text-white/50 p-1 flex items-center transition-colors duration-150 shrink-0 ml-2 hover:text-white/80"
-        onClick={(e) => {
-          e.stopPropagation();
-          onOptionsClick?.(id);
-        }}
+        onClick={() => onToggle(id)}
+        className={cn(
+          'flex-shrink-0 w-6 h-6 rounded-full border flex items-center justify-center transition-all duration-200',
+          checked
+            ? 'bg-emerald-500 border-emerald-500 text-white'
+            : 'bg-transparent border-white/40 hover:border-white/80'
+        )}
       >
-        <MoreVertical size={20} />
+        {checked && <Check size={14} strokeWidth={3} />}
       </button>
+
+      {/* Text Input */}
+      <input
+        type="text"
+        value={text}
+        onChange={(e) => onUpdateText(e.target.value)}
+        className={cn(
+          'flex-1 bg-transparent border-none outline-none text-white placeholder-white/40 focus:ring-0 p-0 text-base font-medium',
+          checked && 'line-through text-white/50'
+        )}
+      />
+
+      {/* Menu */}
+      <button
+        onClick={() => setIsOptionsMenuOpen(true)}
+        className="text-white/30 hover:text-white hover:bg-white/10 p-1 rounded transition-colors opacity-0 group-hover:opacity-100"
+      >
+        <MoreVertical size={16} />
+      </button>
+
+      <ItemOptionsMenu
+        isOpen={isOptionsMenuOpen}
+        onClose={() => setIsOptionsMenuOpen(false)}
+        onEdit={() => {
+          setIsOptionsMenuOpen(false);
+          setIsEditModalOpen(true);
+        }}
+        onDelete={onDelete}
+      />
+
+      <ItemModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        onSave={onUpdateText}
+        initialText={text}
+        mode="edit"
+      />
     </div>
   );
 }

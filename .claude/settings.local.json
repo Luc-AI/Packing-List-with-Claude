@@ -14,7 +14,8 @@
       "Bash(curl:*)",
       "Bash(xattr:*)",
       "Bash(npx tsc:*)",
-      "Bash(GIT_CURL_VERBOSE=1 git push:*)"
+      "Bash(GIT_CURL_VERBOSE=1 git push:*)",
+      "Bash(grep:*)"
     ]
   }
 }

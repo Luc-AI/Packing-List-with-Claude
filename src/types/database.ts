@@ -8,9 +8,20 @@ export interface List {
   updated_at: string;
 }
 
+export interface Section {
+  id: string;
+  list_id: string;
+  name: string;
+  position: number;
+  is_collapsed: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Item {
   id: string;
   list_id: string;
+  section_id: string | null;
   text: string;
   checked: boolean;
   position: number;
@@ -52,10 +63,41 @@ export type Database = {
         };
         Relationships: [];
       };
+      sections: {
+        Row: {
+          id: string;
+          list_id: string;
+          name: string;
+          position: number;
+          is_collapsed: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          list_id: string;
+          name: string;
+          position: number;
+          is_collapsed?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          list_id?: string;
+          name?: string;
+          position?: number;
+          is_collapsed?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       items: {
         Row: {
           id: string;
           list_id: string;
+          section_id: string | null;
           text: string;
           checked: boolean;
           position: number;
@@ -65,6 +107,7 @@ export type Database = {
         Insert: {
           id?: string;
           list_id: string;
+          section_id?: string | null;
           text: string;
           checked?: boolean;
           position: number;
@@ -74,6 +117,7 @@ export type Database = {
         Update: {
           id?: string;
           list_id?: string;
+          section_id?: string | null;
           text?: string;
           checked?: boolean;
           position?: number;

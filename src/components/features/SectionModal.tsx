@@ -108,6 +108,7 @@ export function SectionModal({
               {mode === 'add' ? 'Hinzufügen' : 'Speichern'}
             </button>
           </div>
+
         </form>
       </div>
     </div>,

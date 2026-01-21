@@ -47,7 +47,7 @@ export function SortableItemRow({
       ref={setNodeRef}
       style={style}
       className={cn(
-        'flex items-center p-[clamp(14px,3vw,18px)] px-[clamp(14px,3vw,20px)] transition-colors duration-200 min-h-[56px] hover:bg-white/[0.05]',
+        'flex items-center p-[clamp(14px,3vw,18px)] px-[clamp(14px,3vw,20px)] min-h-[56px] rounded-xl transition-colors duration-200 hover:bg-white/[0.03]',
         isDragging && 'glass-card rounded-xl'
       )}
     >

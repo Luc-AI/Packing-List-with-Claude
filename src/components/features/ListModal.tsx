@@ -139,6 +139,7 @@ export function ListModal({
               {mode === 'add' ? 'Erstellen' : 'Speichern'}
             </button>
           </div>
+
         </form>
       </div>
     </div>

@@ -57,7 +57,7 @@ export function ItemOptionsMenu({ isOpen, onClose, onEdit, onDelete }: ItemOptio
           className="w-full flex items-center gap-4 px-6 py-4 text-white hover:bg-white/10 transition-colors border-b border-white/10"
         >
           <Pencil size={20} className="text-white/70" />
-          <span className="font-medium">Bearbeiten</span>
+          <span className="font-medium">Item bearbeiten</span>
         </button>
 
         <button
@@ -68,7 +68,7 @@ export function ItemOptionsMenu({ isOpen, onClose, onEdit, onDelete }: ItemOptio
           className="w-full flex items-center gap-4 px-6 py-4 text-red-400 hover:bg-white/10 transition-colors"
         >
           <Trash2 size={20} />
-          <span className="font-medium">Löschen</span>
+          <span className="font-medium">Item löschen</span>
         </button>
 
         <button

@@ -32,10 +32,10 @@ export function SectionHeader({
       {/* Divider - only show if not first section */}
       {!isFirst && <div className="h-px bg-white/10 my-2" />}
 
-      <div className="flex items-center">
+      <div className="flex items-center pr-[clamp(14px,3vw,20px)]">
         <button
           onClick={onToggleCollapse}
-          className="flex-1 flex items-center gap-2 px-4 py-3 text-left hover:bg-white/5 transition-colors rounded-lg group"
+          className="flex-1 flex items-center gap-2 px-4 py-3 text-left rounded-lg hover:bg-white/[0.03] transition-colors duration-200 group"
         >
           {isCollapsed ? (
             <ChevronRight size={18} className="text-white/60" />
@@ -45,15 +45,17 @@ export function SectionHeader({
           <h3 className="text-sm font-bold text-white/90 uppercase tracking-wide">
             {title}
           </h3>
-          <span className="text-white/40 text-sm ml-auto">
-            {checkedCount}/{itemCount}
-          </span>
+{itemCount > 0 && (
+            <span className="text-white/50 text-xs ml-auto bg-white/10 px-2 py-0.5 rounded-full">
+              {checkedCount}/{itemCount}
+            </span>
+          )}
         </button>
 
         {/* Menu Button */}
         <button
           onClick={() => setIsOptionsMenuOpen(true)}
-          className="text-white/50 hover:text-white/80 p-1 mr-3 transition-colors duration-150 shrink-0"
+          className="text-white/50 hover:text-white/80 p-1 transition-colors duration-150 shrink-0"
         >
           <MoreVertical size={20} />
         </button>

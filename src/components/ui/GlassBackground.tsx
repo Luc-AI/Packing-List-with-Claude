@@ -2,16 +2,16 @@ import backgroundAvif from '../../assets/background.avif?url';
 import backgroundWebp from '../../assets/background.webp?url';
 
 /**
- * GlassBackground - Full-page background with image
- * Uses AVIF with WebP fallback, Vite-optimized with content hashing for caching
+ * GlassBackground - Full-page background with iOS Safari scroll fix
  *
- * iOS Safari fix: Uses inset-0 WITHOUT height units on fixed elements.
- * Mixing inset-0 with viewport height units causes background jumping on scroll.
+ * Architecture: Body is locked (no scroll). Background is position:fixed.
+ * Content scrolls inside a fixed scroll container. This prevents iOS Safari
+ * from repainting the background during scroll.
  */
 export function GlassBackground({ children }: { children: React.ReactNode }) {
   return (
-    <div className="relative min-h-screen">
-      {/* Fixed Background Container - iOS Safari optimized */}
+    <>
+      {/* Fixed Background - completely outside scroll flow */}
       <div
         className="fixed inset-0 -z-20"
         style={{
@@ -30,7 +30,7 @@ export function GlassBackground({ children }: { children: React.ReactNode }) {
         </picture>
       </div>
 
-      {/* Overlay gradient for better readability */}
+      {/* Fixed Overlay - also outside scroll flow */}
       <div
         className="fixed inset-0 -z-10 pointer-events-none"
         style={{
@@ -40,13 +40,20 @@ export function GlassBackground({ children }: { children: React.ReactNode }) {
         }}
       />
 
-      {/* Content */}
+      {/* Scroll Container - this is what actually scrolls */}
       <div
-        className="relative flex justify-center items-start min-h-screen"
-        style={{ padding: 'clamp(20px, 5vw, 32px) clamp(12px, 4vw, 16px)' }}
+        className="fixed inset-0 overflow-auto"
+        style={{
+          WebkitOverflowScrolling: 'touch',
+        }}
       >
-        <div className="max-w-[512px] w-full">{children}</div>
+        <div
+          className="flex justify-center items-start min-h-full"
+          style={{ padding: 'clamp(20px, 5vw, 32px) clamp(12px, 4vw, 16px)' }}
+        >
+          <div className="max-w-[512px] w-full">{children}</div>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

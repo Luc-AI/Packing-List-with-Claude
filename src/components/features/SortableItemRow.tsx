@@ -47,49 +47,61 @@ export function SortableItemRow({
       ref={setNodeRef}
       style={style}
       className={cn(
-        'group flex items-center gap-3 py-3 px-4 hover:bg-white/5 transition-colors rounded-xl',
-        isDragging && 'bg-white/10 rounded-xl'
+        'flex items-center p-[clamp(14px,3vw,18px)] px-[clamp(14px,3vw,20px)] transition-colors duration-200 min-h-[56px] hover:bg-white/[0.05]',
+        isDragging && 'glass-card rounded-xl'
       )}
     >
       {/* Drag Handle */}
-      <button
-        className="text-white/30 cursor-grab hover:text-white/60 opacity-0 group-hover:opacity-100 transition-opacity touch-none"
+      <div
+        className="mr-[clamp(8px,2vw,12px)] text-white/40 cursor-grab active:cursor-grabbing flex items-center shrink-0 touch-none"
         {...attributes}
         {...listeners}
       >
-        <GripVertical size={16} />
-      </button>
+        <GripVertical size={20} />
+      </div>
 
       {/* Checkbox */}
-      <button
+      <div
         onClick={() => onToggle(id)}
         className={cn(
-          'flex-shrink-0 w-6 h-6 rounded-full border flex items-center justify-center transition-all duration-200',
+          'w-[clamp(24px,4vw,26px)] h-[clamp(24px,4vw,26px)] rounded-[9px] flex items-center justify-center mr-[clamp(10px,2.5vw,14px)] shrink-0 transition-all duration-200 cursor-pointer'
+        )}
+        style={
           checked
-            ? 'bg-emerald-500 border-emerald-500 text-white'
-            : 'bg-transparent border-white/40 hover:border-white/80'
-        )}
+            ? {
+                background: 'var(--check-gradient)',
+                boxShadow: 'var(--check-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.3)',
+              }
+            : {
+                background: 'rgba(255, 255, 255, 0.08)',
+                border: '2.5px solid rgba(255, 255, 255, 0.4)',
+                boxShadow: 'inset 0 2px 4px rgba(0, 0, 0, 0.1)',
+              }
+        }
       >
-        {checked && <Check size={14} strokeWidth={3} />}
-      </button>
+        {checked && <Check size={17} color="white" strokeWidth={3} />}
+      </div>
 
-      {/* Text Input */}
-      <input
-        type="text"
-        value={text}
-        onChange={(e) => onUpdateText(e.target.value)}
+      {/* Text - Click to toggle */}
+      <span
+        onClick={() => onToggle(id)}
         className={cn(
-          'flex-1 bg-transparent border-none outline-none text-white placeholder-white/40 focus:ring-0 p-0 text-base font-medium',
-          checked && 'line-through text-white/50'
+          'flex-1 cursor-pointer select-none text-[clamp(14px,3vw,16px)] transition-all duration-200',
+          checked
+            ? 'text-glass-muted line-through decoration-white/40 font-normal'
+            : 'text-white font-medium'
         )}
-      />
+        style={{ textShadow: '0 1px 4px rgba(0, 0, 0, 0.4)' }}
+      >
+        {text}
+      </span>
 
       {/* Menu */}
       <button
         onClick={() => setIsOptionsMenuOpen(true)}
-        className="text-white/30 hover:text-white hover:bg-white/10 p-1 rounded transition-colors opacity-0 group-hover:opacity-100"
+        className="text-white/50 hover:text-white/80 p-1 transition-colors duration-150 shrink-0 ml-2"
       >
-        <MoreVertical size={16} />
+        <MoreVertical size={20} />
       </button>
 
       <ItemOptionsMenu

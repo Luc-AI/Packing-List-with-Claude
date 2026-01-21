@@ -218,7 +218,7 @@ export const itemsApi = {
 
   async bulkUpdateSectionId(
     itemIds: string[],
-    sectionId: string
+    sectionId: string | null
   ): Promise<ApiResult<void>> {
     const { error } = await supabase
       .from('items')

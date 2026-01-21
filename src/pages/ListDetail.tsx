@@ -22,6 +22,7 @@ import {
   ListModal,
   ListOptionsMenu,
   ResetConfirmModal,
+  DeleteSectionModal,
   SortableItemRow,
   GhostItemButton,
 } from '../components/features';
@@ -51,6 +52,10 @@ export function ListDetail() {
 
   // Section modal state
   const [isSectionModalOpen, setIsSectionModalOpen] = useState(false);
+  const [editingSectionId, setEditingSectionId] = useState<string | null>(null);
+  const [deletingSectionId, setDeletingSectionId] = useState<string | null>(null);
+  const [deletingSectionItemCount, setDeletingSectionItemCount] = useState(0);
+  const [deletingSectionIsLast, setDeletingSectionIsLast] = useState(false);
 
   // List modal state
   const [isListModalOpen, setIsListModalOpen] = useState(false);
@@ -69,6 +74,10 @@ export function ListDetail() {
   const deleteList = useStore((state) => state.deleteList);
   const resetListItems = useStore((state) => state.resetListItems);
   const addSection = useStore((state) => state.addSection);
+  const updateSection = useStore((state) => state.updateSection);
+  const deleteSection = useStore((state) => state.deleteSection);
+  const deleteSectionMoveItems = useStore((state) => state.deleteSectionMoveItems);
+  const deleteLastSectionKeepItems = useStore((state) => state.deleteLastSectionKeepItems);
   const toggleSectionCollapse = useStore((state) => state.toggleSectionCollapse);
   const reorderItemsInSection = useStore((state) => state.reorderItemsInSection);
   const reorderItems = useStore((state) => state.reorderItems);
@@ -128,6 +137,51 @@ export function ListDetail() {
 
   const handleToggleSectionCollapse = async (sectionId: string) => {
     await toggleSectionCollapse(sectionId);
+  };
+
+  const handleEditSection = (sectionId: string) => {
+    setEditingSectionId(sectionId);
+  };
+
+  const handleSaveEditSection = async (name: string) => {
+    if (editingSectionId) {
+      await updateSection(editingSectionId, { name });
+      setEditingSectionId(null);
+    }
+  };
+
+  const handleDeleteSection = (sectionId: string, itemCount: number, isLastSection: boolean) => {
+    if (itemCount === 0) {
+      // Empty section - delete immediately
+      deleteSection(sectionId);
+    } else {
+      // Section has items - show confirmation modal
+      setDeletingSectionId(sectionId);
+      setDeletingSectionItemCount(itemCount);
+      setDeletingSectionIsLast(isLastSection);
+    }
+  };
+
+  const handleDeleteSectionAll = async () => {
+    if (deletingSectionId) {
+      await deleteSection(deletingSectionId);
+      setDeletingSectionId(null);
+      setDeletingSectionIsLast(false);
+    }
+  };
+
+  const handleDeleteSectionMoveItems = async () => {
+    if (deletingSectionId) {
+      if (deletingSectionIsLast) {
+        // Last section: keep items as loose items
+        await deleteLastSectionKeepItems(deletingSectionId);
+      } else {
+        // Normal case: move items to Sonstiges
+        await deleteSectionMoveItems(deletingSectionId);
+      }
+      setDeletingSectionId(null);
+      setDeletingSectionIsLast(false);
+    }
   };
 
   // Item handlers
@@ -249,12 +303,15 @@ export function ListDetail() {
                   key={section.id}
                   section={section}
                   items={sectionItems}
+                  totalSectionCount={sections.length}
                   onToggleCollapse={handleToggleSectionCollapse}
                   onAddItem={handleAddItem}
                   onUpdateItem={handleUpdateItem}
                   onDeleteItem={handleDeleteItem}
                   onToggleItem={handleToggleItem}
                   onReorderItems={handleReorderItems}
+                  onEditSection={handleEditSection}
+                  onDeleteSection={handleDeleteSection}
                   isFirst={index === 0}
                 />
               );
@@ -308,12 +365,35 @@ export function ListDetail() {
         Neuer Abschnitt
       </button>
 
-      {/* Section Modal */}
+      {/* Section Modal - Add */}
       <SectionModal
         isOpen={isSectionModalOpen}
         onClose={() => setIsSectionModalOpen(false)}
         onSave={handleSaveSection}
         mode="add"
+      />
+
+      {/* Section Modal - Edit */}
+      <SectionModal
+        isOpen={editingSectionId !== null}
+        onClose={() => setEditingSectionId(null)}
+        onSave={handleSaveEditSection}
+        initialName={sections.find((s) => s.id === editingSectionId)?.name || ''}
+        mode="edit"
+      />
+
+      {/* Delete Section Modal */}
+      <DeleteSectionModal
+        isOpen={deletingSectionId !== null}
+        onClose={() => {
+          setDeletingSectionId(null);
+          setDeletingSectionIsLast(false);
+        }}
+        onDeleteAll={handleDeleteSectionAll}
+        onMoveToOther={handleDeleteSectionMoveItems}
+        itemCount={deletingSectionItemCount}
+        sectionName={sections.find((s) => s.id === deletingSectionId)?.name || ''}
+        isLastSection={deletingSectionIsLast}
       />
 
       {/* List Modal */}

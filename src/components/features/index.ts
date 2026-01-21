@@ -13,5 +13,7 @@ export { InlineEditableText } from './InlineEditableText';
 export { GhostItemButton } from './GhostItemButton';
 export { SectionHeader } from './SectionHeader';
 export { SectionCard } from './SectionCard';
+export { SectionOptionsMenu } from './SectionOptionsMenu';
 export { AddSectionButton } from './AddSectionButton';
 export { SectionModal } from './SectionModal';
+export { DeleteSectionModal } from './DeleteSectionModal';

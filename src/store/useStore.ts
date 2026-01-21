@@ -25,6 +25,8 @@ interface PackingStore {
   addSection: (listId: string, name: string) => Promise<string | null>;
   updateSection: (id: string, updates: Partial<Pick<Section, 'name' | 'is_collapsed'>>) => Promise<void>;
   deleteSection: (id: string) => Promise<void>;
+  deleteSectionMoveItems: (id: string) => Promise<void>;
+  deleteLastSectionKeepItems: (id: string) => Promise<void>;
   toggleSectionCollapse: (id: string) => Promise<void>;
   getSectionsByListId: (listId: string) => Section[];
   reorderSections: (listId: string, sectionIds: string[]) => Promise<void>;
@@ -280,6 +282,135 @@ export const useStore = create<PackingStore>()((set, get) => ({
             ),
           }));
         }
+      }
+    }
+  },
+
+  deleteSectionMoveItems: async (id) => {
+    const section = get().sections.find((s) => s.id === id);
+    if (!section) return;
+
+    const listId = section.list_id;
+
+    // Find "Sonstiges" section in the same list
+    let sonstigesSection = get().sections.find(
+      (s) => s.list_id === listId && s.name === 'Sonstiges' && s.id !== id
+    );
+
+    // If Sonstiges doesn't exist, create it
+    if (!sonstigesSection) {
+      const listSections = get().sections.filter((s) => s.list_id === listId);
+      const maxPosition = Math.max(...listSections.map((s) => s.position), 0);
+
+      const createResult = await sectionsApi.create({
+        list_id: listId,
+        name: 'Sonstiges',
+        position: maxPosition + 1,
+      });
+
+      if (createResult.error) {
+        useToastStore.getState().addToast('Fehler beim Erstellen von "Sonstiges"', 'error');
+        return;
+      }
+
+      sonstigesSection = createResult.data!;
+      set((state) => ({ sections: [...state.sections, createResult.data!] }));
+      useToastStore.getState().addToast('Abschnitt „Sonstiges" wurde erstellt', 'info');
+    }
+
+    // Get items in the section to be deleted
+    const itemsToMove = get().items.filter((item) => item.section_id === id);
+    const itemIds = itemsToMove.map((item) => item.id);
+
+    // Optimistic update - move items to Sonstiges and delete section
+    const previousSections = get().sections;
+    const previousItems = get().items;
+
+    set((state) => ({
+      sections: state.sections.filter((s) => s.id !== id),
+      items: state.items.map((item) =>
+        item.section_id === id ? { ...item, section_id: sonstigesSection!.id } : item
+      ),
+    }));
+
+    // Move items to Sonstiges
+    if (itemIds.length > 0) {
+      const moveResult = await itemsApi.bulkUpdateSectionId(itemIds, sonstigesSection.id);
+      if (moveResult.error) {
+        set({ sections: previousSections, items: previousItems, error: moveResult.error });
+        useToastStore.getState().addToast('Fehler beim Verschieben der Items', 'error');
+        return;
+      }
+    }
+
+    // Delete the now-empty section
+    const deleteResult = await sectionsApi.delete(id);
+    if (deleteResult.error) {
+      set({ sections: previousSections, items: previousItems, error: deleteResult.error });
+      useToastStore.getState().addToast('Fehler beim Löschen des Abschnitts', 'error');
+    } else {
+      useToastStore.getState().addToast(
+        `${itemIds.length} ${itemIds.length === 1 ? 'Item' : 'Items'} nach "Sonstiges" verschoben`,
+        'info'
+      );
+      // Touch list timestamp
+      const listResult = await listsApi.touchTimestamp(listId);
+      if (listResult.data) {
+        set((state) => ({
+          lists: state.lists.map((list) =>
+            list.id === listId ? { ...list, updated_at: listResult.data!.updated_at } : list
+          ),
+        }));
+      }
+    }
+  },
+
+  deleteLastSectionKeepItems: async (id) => {
+    const section = get().sections.find((s) => s.id === id);
+    if (!section) return;
+
+    const listId = section.list_id;
+
+    // Get items in the section to convert to loose items
+    const itemsToConvert = get().items.filter((item) => item.section_id === id);
+    const itemIds = itemsToConvert.map((item) => item.id);
+
+    // Optimistic update - convert items to loose (section_id = null) and delete section
+    const previousSections = get().sections;
+    const previousItems = get().items;
+
+    set((state) => ({
+      sections: state.sections.filter((s) => s.id !== id),
+      items: state.items.map((item) =>
+        item.section_id === id ? { ...item, section_id: null } : item
+      ),
+    }));
+
+    // Update items to have section_id = null
+    if (itemIds.length > 0) {
+      const updateResult = await itemsApi.bulkUpdateSectionId(itemIds, null);
+      if (updateResult.error) {
+        set({ sections: previousSections, items: previousItems, error: updateResult.error });
+        useToastStore.getState().addToast('Fehler beim Konvertieren der Items', 'error');
+        return;
+      }
+    }
+
+    // Delete the section
+    const deleteResult = await sectionsApi.delete(id);
+    if (deleteResult.error) {
+      set({ sections: previousSections, items: previousItems, error: deleteResult.error });
+      useToastStore.getState().addToast('Fehler beim Löschen des Abschnitts', 'error');
+    } else {
+      useToastStore.getState().addToast('Abschnitte entfernt, Items behalten', 'info');
+      // Touch list timestamp
+      const listResult = await listsApi.touchTimestamp(listId);
+      if (listResult.data) {
+        set((state) => ({
+          lists: state.lists.map((list) =>
+            list.id === listId ? { ...list, updated_at: listResult.data!.updated_at } : list
+          ),
+        }));
       }
     }
   },

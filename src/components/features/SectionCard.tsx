@@ -20,24 +20,30 @@ import type { Section, Item } from '../../types/database';
 interface SectionCardProps {
   section: Section;
   items: Item[];
+  totalSectionCount: number;
   onToggleCollapse: (sectionId: string) => void;
   onAddItem: (sectionId: string, text: string) => void;
   onUpdateItem: (itemId: string, text: string) => void;
   onDeleteItem: (itemId: string) => void;
   onToggleItem: (itemId: string) => void;
   onReorderItems: (sectionId: string, itemIds: string[]) => void;
+  onEditSection: (sectionId: string) => void;
+  onDeleteSection: (sectionId: string, itemCount: number, isLastSection: boolean) => void;
   isFirst?: boolean;
 }
 
 export function SectionCard({
   section,
   items,
+  totalSectionCount,
   onToggleCollapse,
   onAddItem,
   onUpdateItem,
   onDeleteItem,
   onToggleItem,
   onReorderItems,
+  onEditSection,
+  onDeleteSection,
   isFirst = false,
 }: SectionCardProps) {
   const sensors = useSensors(
@@ -73,6 +79,11 @@ export function SectionCard({
 
   const checkedCount = items.filter((item) => item.checked).length;
 
+  // Sonstiges can only be deleted if it's the last section
+  const isSonstiges = section.name === 'Sonstiges';
+  const isLastSection = totalSectionCount === 1;
+  const canDelete = !isSonstiges || isLastSection;
+
   return (
     <div>
       <SectionHeader
@@ -81,6 +92,9 @@ export function SectionCard({
         itemCount={items.length}
         checkedCount={checkedCount}
         onToggleCollapse={() => onToggleCollapse(section.id)}
+        onEdit={() => onEditSection(section.id)}
+        onDelete={() => onDeleteSection(section.id, items.length, isLastSection)}
+        canDelete={canDelete}
         isFirst={isFirst}
       />
 

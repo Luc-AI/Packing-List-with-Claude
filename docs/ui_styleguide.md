@@ -880,6 +880,45 @@ function MyModal({ isOpen, onClose, children }) {
 
 ## 12. Quick Reference
 
+### 12.0 Critical: backdrop-filter Property Order
+
+> **PFLICHT:** When writing custom CSS with `backdrop-filter`, the webkit prefix MUST come BEFORE the standard property.
+
+#### Problem: CSS Processors Deduplicate Properties
+
+Tailwind CSS v4 and other CSS processors may deduplicate what they see as "duplicate" properties. If the standard `backdrop-filter` comes first, it gets removed, leaving only `-webkit-backdrop-filter`. Chrome desktop requires the standard property and ignores the webkit prefix.
+
+```css
+/* ❌ WRONG - standard property gets stripped in production */
+.my-glass {
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+}
+/* Production output: only -webkit-backdrop-filter remains */
+
+/* ✅ CORRECT - both properties preserved */
+.my-glass {
+  -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: blur(24px);
+}
+/* Production output: both properties present */
+```
+
+#### Browser Support
+
+| Browser | Requires |
+|---------|----------|
+| Chrome (desktop) | Standard `backdrop-filter` |
+| Safari | `-webkit-backdrop-filter` |
+| Firefox | Standard `backdrop-filter` |
+
+#### Checklist for New Glass Effects
+
+- [ ] `-webkit-backdrop-filter` declared FIRST
+- [ ] `backdrop-filter` declared SECOND (standard property)
+- [ ] Test production build: `npm run build && grep 'backdrop-filter' dist/assets/*.css`
+- [ ] Verify BOTH properties appear in minified output
+
 ### 12.1 Common Class Combinations
 
 ```css

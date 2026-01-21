@@ -7,15 +7,30 @@ interface AuthResult {
   error: AuthError | null;
 }
 
+// Check if user needs onboarding (new user created within last 5 minutes)
+function checkNeedsOnboarding(user: User | null): boolean {
+  if (!user) return false;
+  if (user.user_metadata?.onboarding_completed) return false;
+  if (!user.created_at) return false;
+
+  const createdAt = new Date(user.created_at);
+  const now = new Date();
+  const diffMinutes = (now.getTime() - createdAt.getTime()) / (1000 * 60);
+
+  return diffMinutes < 5;
+}
+
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
+  needsOnboarding: boolean;
   signUp: (email: string, password: string) => Promise<AuthResult>;
   signIn: (email: string, password: string) => Promise<AuthResult>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<AuthResult>;
   updatePassword: (newPassword: string) => Promise<AuthResult>;
+  updateUserMetadata: (data: Record<string, unknown>) => Promise<AuthResult>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -99,9 +114,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return { error };
   };
 
+  const updateUserMetadata = async (data: Record<string, unknown>): Promise<AuthResult> => {
+    const { data: userData, error } = await supabase.auth.updateUser({ data });
+    if (!error && userData.user) {
+      setUser(userData.user);
+    }
+    return { error };
+  };
+
+  const needsOnboarding = checkNeedsOnboarding(user);
+
   return (
     <AuthContext.Provider
-      value={{ user, session, loading, signUp, signIn, signOut, resetPassword, updatePassword }}
+      value={{ user, session, loading, needsOnboarding, signUp, signIn, signOut, resetPassword, updatePassword, updateUserMetadata }}
     >
       {children}
     </AuthContext.Provider>

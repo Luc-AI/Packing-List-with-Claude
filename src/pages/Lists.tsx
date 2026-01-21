@@ -41,10 +41,8 @@ export function Lists() {
   const getListStats = useStore((state) => state.getListStats);
 
   // Extract display name for greeting
-  const displayName =
-    user?.user_metadata?.full_name?.split(' ')[0] ||
-    user?.email?.split('@')[0] ||
-    'Reisender';
+  const firstName = user?.user_metadata?.first_name as string | undefined;
+  const displayName = firstName || 'there';
 
   const handleCreateList = () => {
     setIsListModalOpen(true);

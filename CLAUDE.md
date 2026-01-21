@@ -13,6 +13,7 @@ Project-specific instructions for Claude Code when working on this codebase.
 1. **Never hardcode opacity values** - Always use CSS variables from `src/index.css`
 2. **Desktop glass enhancement is automatic** - CSS variables are overridden via media query for desktop
 3. **Use utility classes** - `.glass-card`, `.glass-card-light`, `.glass-button-dashed`
+4. **backdrop-filter property order** - When writing custom CSS with `backdrop-filter`, ALWAYS declare `-webkit-backdrop-filter` BEFORE `backdrop-filter`. CSS processors strip the standard property if it comes first, breaking Chrome desktop.
 
 ### Glass Effect Quick Reference
 

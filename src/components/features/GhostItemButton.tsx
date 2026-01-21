@@ -1,5 +1,4 @@
 import { useState, useRef } from 'react';
-import { Plus } from 'lucide-react';
 
 interface GhostItemButtonProps {
   onAdd: (text: string) => void;
@@ -7,7 +6,6 @@ interface GhostItemButtonProps {
 
 export function GhostItemButton({ onAdd }: GhostItemButtonProps) {
   const [text, setText] = useState('');
-  const [isFocused, setIsFocused] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -22,7 +20,6 @@ export function GhostItemButton({ onAdd }: GhostItemButtonProps) {
   };
 
   const handleBlur = () => {
-    setIsFocused(false);
     if (text.trim()) {
       onAdd(text.trim());
       setText('');
@@ -31,24 +28,16 @@ export function GhostItemButton({ onAdd }: GhostItemButtonProps) {
 
   return (
     <div
-      className="flex items-center gap-3 py-3 px-4 cursor-text group"
+      className="flex items-center p-[clamp(14px,3vw,18px)] px-[clamp(14px,3vw,20px)] min-h-[56px] cursor-text group"
       onClick={() => inputRef.current?.focus()}
     >
       {/* Placeholder for drag handle alignment */}
-      <div className="w-4" />
+      <div className="mr-[clamp(8px,2vw,12px)] shrink-0 w-[20px]" />
 
-      {/* Ghost Icon */}
+      {/* Ghost checkbox */}
       <div
-        className={`
-          flex-shrink-0 w-6 h-6 rounded-full border border-dashed flex items-center justify-center transition-colors
-          ${isFocused ? 'border-white/60 bg-white/5' : 'border-white/20 group-hover:border-white/40'}
-        `}
-      >
-        <Plus
-          size={14}
-          className={`text-white/40 ${isFocused ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} transition-opacity`}
-        />
-      </div>
+        className="w-[clamp(24px,4vw,26px)] h-[clamp(24px,4vw,26px)] rounded-[9px] flex items-center justify-center mr-[clamp(10px,2.5vw,14px)] shrink-0 transition-all duration-200 border-2 border-dashed border-white/20"
+      />
 
       {/* Input */}
       <input
@@ -56,11 +45,11 @@ export function GhostItemButton({ onAdd }: GhostItemButtonProps) {
         type="text"
         value={text}
         onChange={(e) => setText(e.target.value)}
-        onFocus={() => setIsFocused(true)}
         onBlur={handleBlur}
         onKeyDown={handleKeyDown}
         placeholder="Neues Item"
-        className="flex-1 bg-transparent border-none outline-none text-white/80 placeholder-white/30 focus:ring-0 p-0 text-base"
+        className="flex-1 bg-transparent border-none outline-none text-glass-muted placeholder-white/30 focus:ring-0 p-0 text-[clamp(14px,3vw,16px)]"
+        style={{ textShadow: '0 1px 4px rgba(0, 0, 0, 0.4)' }}
       />
     </div>
   );

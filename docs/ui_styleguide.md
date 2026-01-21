@@ -98,7 +98,70 @@ style={{ background: 'var(--glass-bg-dashed)' }}
 className="glass-button-dashed"
 ```
 
-### 2.2 Tailwind Utility Classes
+### 2.2 iOS Safari Compatibility
+
+#### 2.2.1 Fixed Background Scroll Architecture
+
+iOS Safari has issues with `position: fixed` when the body scrolls - fixed elements repaint during scroll, causing background jumping.
+
+**Solution:** Lock the body and use a scroll container:
+
+```css
+/* index.css */
+html, body {
+  height: 100%;
+  overflow: hidden;
+}
+```
+
+```tsx
+/* GlassBackground.tsx - Scroll Container Pattern */
+<>
+  {/* Fixed background - outside scroll flow */}
+  <div className="fixed inset-0 -z-20">...</div>
+
+  {/* Fixed overlay - outside scroll flow */}
+  <div className="fixed inset-0 -z-10">...</div>
+
+  {/* Scroll container - content scrolls here */}
+  <div className="fixed inset-0 overflow-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
+    {children}
+  </div>
+</>
+```
+
+**Key principles:**
+- Body never scrolls (locked with `overflow: hidden`)
+- Background/overlay are siblings, not parents of scroll container
+- Scrolling happens inside a fixed container
+- `-webkit-overflow-scrolling: touch` enables momentum scrolling
+
+#### 2.2.2 Safe Area Insets (Notch/Status Bar)
+
+To extend backgrounds behind the iOS status bar/notch while keeping content readable:
+
+```tsx
+{/* Background extends into safe areas */}
+<div
+  className="fixed -z-20"
+  style={{
+    top: 'calc(-1 * env(safe-area-inset-top, 0px))',
+    right: 'calc(-1 * env(safe-area-inset-right, 0px))',
+    bottom: 'calc(-1 * env(safe-area-inset-bottom, 0px))',
+    left: 'calc(-1 * env(safe-area-inset-left, 0px))',
+  }}
+/>
+
+{/* Content stays within safe areas */}
+<div className="fixed inset-0 overflow-auto">...</div>
+```
+
+**Requirements:**
+- `index.html` must have `viewport-fit=cover` in the viewport meta tag
+- Background/overlay use negative safe-area positioning
+- Content container uses `inset-0` (stays within safe areas)
+
+### 2.3 Tailwind Utility Classes
 
 ```css
 /* Text utilities (defined in index.css) */
@@ -111,7 +174,7 @@ className="glass-button-dashed"
 .glass-card-light     /* Lighter variant for list items */
 ```
 
-### 2.3 Color Usage Rules
+### 2.4 Color Usage Rules
 
 | Element | Color | Class/Variable |
 |---------|-------|----------------|
@@ -876,11 +939,210 @@ function MyModal({ isOpen, onClose, children }) {
 - [ ] `z-index: 9999` oder höher gesetzt
 - [ ] Getestet: Modal erscheint ÜBER allen UI-Elementen
 
+### 11.12 Contextual Delete Button (Edit Modals)
+
+> **Rule:** All edit modals should include a delete button at the bottom, making them contextual for the entity being edited.
+
+#### Pattern
+
+```tsx
+{mode === 'edit' && onDelete && (
+  <button
+    type="button"
+    onClick={() => {
+      onDelete();
+      onClose();
+    }}
+    className="w-full mt-4 px-4 py-3 rounded-xl bg-red-500/20 text-red-400 font-medium hover:bg-red-500/30 transition-colors flex items-center justify-center gap-2"
+  >
+    <Trash2 size={18} />
+    [Entity] löschen
+  </button>
+)}
+```
+
+#### Implementation Checklist
+
+| Modal | Title (Edit Mode) | Delete Button Text |
+|-------|-------------------|-------------------|
+| ListModal | "Liste bearbeiten" | "Liste löschen" |
+| ItemModal | "Item bearbeiten" | "Item löschen" |
+| SectionModal | "Abschnitt bearbeiten" | "Abschnitt löschen" |
+
+#### Props Pattern
+
+```tsx
+interface ModalProps {
+  // ... existing props
+  onDelete?: () => void;  // Optional - only shown in edit mode when provided
+}
+```
+
+#### Styling
+
+| Property | Value |
+|----------|-------|
+| Background | `bg-red-500/20` |
+| Text color | `text-red-400` |
+| Hover | `hover:bg-red-500/30` |
+| Icon | `Trash2 size={18}` |
+| Position | Full width, below action buttons with `mt-4` |
+
 ---
 
-## 12. Quick Reference
+## 12. List Item Rows
 
-### 12.0 Critical: backdrop-filter Property Order
+> Item rows are sortable, interactive elements within glass card containers. They must always show drag handles and action menus for discoverability.
+
+### 12.1 Item Row Structure
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  ⋮⋮  ☑  Item text here                              •••    │
+│  ↑    ↑   ↑                                          ↑      │
+│ drag  cb  editable text                            menu     │
+│handle     input                                   button    │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### 12.2 Item Row Container
+
+Item rows should be wrapped in a `glass-card-light` container:
+
+```tsx
+// ✅ CORRECT - uses glass utility class
+<div className="glass-card-light rounded-3xl overflow-hidden mb-[clamp(16px,3vw,24px)]">
+  <div className="p-2">
+    {items.map((item) => <SortableItemRow key={item.id} {...item} />)}
+  </div>
+</div>
+
+// ❌ WRONG - hardcoded values, no desktop enhancement
+<div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl">
+```
+
+### 12.3 Individual Item Row Styling
+
+```tsx
+// Item row container
+className={cn(
+  'flex items-center p-[clamp(14px,3vw,18px)] px-[clamp(14px,3vw,20px)] transition-colors duration-200 min-h-[56px]',
+  checked ? 'bg-white/[0.08]' : 'hover:bg-white/[0.05]',
+  isDragging && 'glass-card rounded-xl'
+)}
+```
+
+### 12.4 Drag Handle (6 Dots)
+
+> **CRITICAL:** Drag handles must ALWAYS be visible. Never use `opacity-0` or hide on mobile.
+
+```tsx
+// ✅ CORRECT - always visible
+<div
+  className="mr-[clamp(8px,2vw,12px)] text-white/40 cursor-grab active:cursor-grabbing flex items-center shrink-0 touch-none"
+  {...attributes}
+  {...listeners}
+>
+  <GripVertical size={20} />
+</div>
+
+// ❌ WRONG - hidden by default, bad UX
+<button className="opacity-0 group-hover:opacity-100 ...">
+  <GripVertical size={16} />
+</button>
+```
+
+| Property | Value |
+|----------|-------|
+| Color | `text-white/40` |
+| Size | `20px` (never smaller) |
+| Cursor | `cursor-grab`, `active:cursor-grabbing` |
+| Visibility | Always visible |
+| Touch | `touch-none` (prevents scroll interference) |
+
+### 12.5 Checkbox
+
+Checkboxes use CSS variables for gradient styling:
+
+```tsx
+<div
+  onClick={() => onToggle(id)}
+  className="w-[clamp(24px,4vw,26px)] h-[clamp(24px,4vw,26px)] rounded-[9px] flex items-center justify-center mr-[clamp(10px,2.5vw,14px)] shrink-0 transition-all duration-200 cursor-pointer"
+  style={
+    checked
+      ? {
+          background: 'var(--check-gradient)',
+          boxShadow: 'var(--check-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.3)',
+        }
+      : {
+          background: 'rgba(255, 255, 255, 0.08)',
+          border: '2.5px solid rgba(255, 255, 255, 0.4)',
+          boxShadow: 'inset 0 2px 4px rgba(0, 0, 0, 0.1)',
+        }
+  }
+>
+  {checked && <Check size={17} color="white" strokeWidth={3} />}
+</div>
+```
+
+### 12.6 Item Text Input
+
+```tsx
+<input
+  type="text"
+  value={text}
+  onChange={(e) => onUpdateText(e.target.value)}
+  className={cn(
+    'flex-1 bg-transparent border-none outline-none placeholder-white/40 focus:ring-0 p-0 text-[clamp(14px,3vw,16px)] transition-all duration-200',
+    checked
+      ? 'text-glass-muted line-through decoration-white/40 font-normal'
+      : 'text-white font-medium'
+  )}
+  style={{ textShadow: '0 1px 4px rgba(0, 0, 0, 0.4)' }}
+/>
+```
+
+### 12.7 Options Menu Button (3 Dots)
+
+> **CRITICAL:** Menu buttons must ALWAYS be visible. Never hide with `opacity-0`.
+
+```tsx
+// ✅ CORRECT - always visible
+<button
+  onClick={() => setIsOptionsMenuOpen(true)}
+  className="text-white/50 hover:text-white/80 p-1 transition-colors duration-150 shrink-0 ml-2"
+>
+  <MoreVertical size={20} />
+</button>
+
+// ❌ WRONG - invisible until hover
+<button className="opacity-0 group-hover:opacity-100 ...">
+  <MoreVertical size={16} />
+</button>
+```
+
+| Property | Value |
+|----------|-------|
+| Color | `text-white/50`, hover: `text-white/80` |
+| Size | `20px` (never smaller) |
+| Visibility | Always visible |
+| Padding | `p-1` |
+
+### 12.8 Anti-Patterns for Item Rows
+
+| Don't | Do Instead |
+|-------|------------|
+| `opacity-0 group-hover:opacity-100` on controls | Always visible with `text-white/40` or `text-white/50` |
+| Icon `size={16}` for interactive elements | `size={20}` minimum |
+| Hardcoded `bg-white/10 backdrop-blur-md` container | `glass-card-light` class |
+| `<button>` for drag handle | `<div>` with drag listeners |
+| Missing `touch-none` on drag handle | Always include for mobile |
+
+---
+
+## 13. Quick Reference
+
+### 13.0 Critical: backdrop-filter Property Order
 
 > **PFLICHT:** When writing custom CSS with `backdrop-filter`, the webkit prefix MUST come BEFORE the standard property.
 
@@ -919,7 +1181,7 @@ Tailwind CSS v4 and other CSS processors may deduplicate what they see as "dupli
 - [ ] Test production build: `npm run build && grep 'backdrop-filter' dist/assets/*.css`
 - [ ] Verify BOTH properties appear in minified output
 
-### 12.1 Common Class Combinations
+### 13.1 Common Class Combinations
 
 ```css
 /* Glass button */
@@ -935,7 +1197,7 @@ cursor-pointer transition-all duration-200 hover:bg-white/[0.18] hover:-translat
 glass-button-dashed
 ```
 
-### 12.1.1 CSS Utility Classes (Desktop-Enhanced)
+### 13.1.1 CSS Utility Classes (Desktop-Enhanced)
 
 These classes automatically apply desktop liquid glass enhancement:
 
@@ -945,13 +1207,13 @@ These classes automatically apply desktop liquid glass enhancement:
 | `.glass-card-light` | Lighter variant for list items |
 | `.glass-button-dashed` | Dashed border button (e.g., "Add item") |
 
-### 12.2 Import Pattern
+### 13.2 Import Pattern
 
 ```tsx
 import { Button, Input, GlassBackground, GlassCard, Modal } from '../components/ui';
 ```
 
-### 12.3 Modal Quick Reference
+### 13.3 Modal Quick Reference
 
 ```css
 /* Modal overlay */

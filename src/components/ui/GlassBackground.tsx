@@ -11,10 +11,14 @@ import backgroundWebp from '../../assets/background.webp?url';
 export function GlassBackground({ children }: { children: React.ReactNode }) {
   return (
     <>
-      {/* Fixed Background - completely outside scroll flow */}
+      {/* Fixed Background - extends into safe areas (notch/status bar) */}
       <div
-        className="fixed inset-0 -z-20"
+        className="fixed -z-20"
         style={{
+          top: 'calc(-1 * env(safe-area-inset-top, 0px))',
+          right: 'calc(-1 * env(safe-area-inset-right, 0px))',
+          bottom: 'calc(-1 * env(safe-area-inset-bottom, 0px))',
+          left: 'calc(-1 * env(safe-area-inset-left, 0px))',
           WebkitTransform: 'translate3d(0, 0, 0)',
           transform: 'translate3d(0, 0, 0)',
         }}
@@ -30,10 +34,14 @@ export function GlassBackground({ children }: { children: React.ReactNode }) {
         </picture>
       </div>
 
-      {/* Fixed Overlay - also outside scroll flow */}
+      {/* Fixed Overlay - extends into safe areas */}
       <div
-        className="fixed inset-0 -z-10 pointer-events-none"
+        className="fixed -z-10 pointer-events-none"
         style={{
+          top: 'calc(-1 * env(safe-area-inset-top, 0px))',
+          right: 'calc(-1 * env(safe-area-inset-right, 0px))',
+          bottom: 'calc(-1 * env(safe-area-inset-bottom, 0px))',
+          left: 'calc(-1 * env(safe-area-inset-left, 0px))',
           background: 'linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.3) 100%)',
           WebkitTransform: 'translate3d(0, 0, 0)',
           transform: 'translate3d(0, 0, 0)',

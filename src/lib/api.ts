@@ -14,7 +14,7 @@ export const listsApi = {
       .from('lists')
       .select('*')
       .eq('user_id', userId)
-      .order('created_at', { ascending: false });
+      .order('updated_at', { ascending: false });
 
     if (error) {
       return { data: null, error: error.message };

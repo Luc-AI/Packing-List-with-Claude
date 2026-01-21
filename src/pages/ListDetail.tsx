@@ -291,7 +291,7 @@ export function ListDetail() {
 
       {/* Single Card containing all sections or loose items */}
       {sections.length > 0 ? (
-        <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl overflow-hidden shadow-lg mb-[clamp(16px,3vw,24px)]">
+        <div className="glass-card-light rounded-3xl overflow-hidden mb-[clamp(16px,3vw,24px)]">
           <div className="p-2">
             {sections.map((section, index) => {
               const sectionItems = items
@@ -320,7 +320,7 @@ export function ListDetail() {
         </div>
       ) : (
         // Section-less mode: show loose items + ghost button
-        <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl overflow-hidden shadow-lg mb-[clamp(16px,3vw,24px)]">
+        <div className="glass-card-light rounded-3xl overflow-hidden mb-[clamp(16px,3vw,24px)]">
           <div className="p-2">
             {looseItems.length === 0 && (
               <p className="text-white/40 text-sm text-center py-3">
@@ -359,7 +359,7 @@ export function ListDetail() {
       {/* Add Section Button */}
       <button
         onClick={handleAddSection}
-        className="w-full py-4 rounded-2xl border-2 border-dashed border-white/20 text-white/60 hover:text-white hover:border-white/40 hover:bg-white/5 transition-all flex items-center justify-center gap-2 font-medium"
+        className="w-full py-4 rounded-2xl glass-button-dashed text-white/60 hover:text-white flex items-center justify-center gap-2 font-medium"
       >
         <Plus size={20} />
         Neuer Abschnitt

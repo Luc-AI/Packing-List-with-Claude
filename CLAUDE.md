@@ -20,9 +20,17 @@ Project-specific instructions for Claude Code when working on this codebase.
 | Element | Class/Variable |
 |---------|----------------|
 | Header cards | `.glass-card` |
-| List item cards | `.glass-card-light` |
+| List item cards/containers | `.glass-card-light` |
 | Add/Create buttons | `.glass-button-dashed` |
 | Progress bar track | `var(--glass-progress-track)` |
+
+### Item Row Rules (Section 12 in styleguide)
+
+1. **Drag handles (6 dots) must ALWAYS be visible** - Never use `opacity-0` or hide on hover
+2. **Menu buttons (3 dots) must ALWAYS be visible** - Same rule, always `text-white/50`
+3. **Icon size minimum 20px** - Never use `size={16}` for interactive elements
+4. **Use `glass-card-light` for item containers** - Never hardcode `bg-white/10 backdrop-blur-md`
+5. **Checkbox uses CSS variables** - `var(--check-gradient)` and `var(--check-shadow)`
 
 ### Desktop Liquid Glass System
 
@@ -35,6 +43,10 @@ Desktop browsers (Chrome) render `backdrop-filter` differently than mobile Safar
 ```
 
 **Do NOT create separate desktop styling in components** - the CSS variables handle this.
+
+## Versioning
+
+**Update version in `package.json` for every major feature update and release.** The version is displayed in the user menu (UserMenu.tsx) along with build timestamp.
 
 ## Tech Stack
 

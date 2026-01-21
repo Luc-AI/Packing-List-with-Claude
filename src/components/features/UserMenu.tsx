@@ -202,6 +202,14 @@ export function UserMenu() {
                 Abmelden
               </button>
             </div>
+
+            {/* Version Info */}
+            <p className="mt-4 text-center text-xs text-white/30">
+              v{__APP_VERSION__} · {new Date(__BUILD_TIME__).toLocaleString('de-DE', {
+                day: '2-digit', month: '2-digit', year: 'numeric',
+                hour: '2-digit', minute: '2-digit'
+              })}
+            </p>
           </div>
         </div>,
         document.body

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical, MoreVertical, Check } from 'lucide-react';
+import { Menu, MoreVertical, Check } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { ItemModal } from './ItemModal';
 import { ItemOptionsMenu } from './ItemOptionsMenu';
@@ -57,7 +57,7 @@ export function SortableItemRow({
         {...attributes}
         {...listeners}
       >
-        <GripVertical size={20} />
+        <Menu size={20} />
       </div>
 
       {/* Checkbox */}

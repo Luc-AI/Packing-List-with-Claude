@@ -1,4 +1,4 @@
-import { GripVertical, Trash2, Check } from 'lucide-react';
+import { Menu, Trash2, Check } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { InlineEditableText } from './InlineEditableText';
 
@@ -42,7 +42,7 @@ export function ItemRow({
         className="mr-[clamp(8px,2vw,12px)] text-white/40 cursor-grab flex items-center shrink-0"
         onClick={(e) => e.stopPropagation()}
       >
-        <GripVertical size={20} />
+        <Menu size={20} />
       </div>
 
       {/* Checkbox */}

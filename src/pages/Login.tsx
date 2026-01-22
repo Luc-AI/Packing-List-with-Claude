@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Button, Input, GlassBackground, GlassCard } from '../components/ui';
+import { Button, Input, GlassCard } from '../components/ui';
 
 type AuthMode = 'login' | 'register' | 'forgot';
 
@@ -84,29 +84,26 @@ export function Login() {
 
   if (loading) {
     return (
-      <GlassBackground>
-        <div className="flex items-center justify-center min-h-[80vh]">
-          <div className="animate-spin h-8 w-8 border-4 border-white border-t-transparent rounded-full" />
-        </div>
-      </GlassBackground>
+      <div className="flex items-center justify-center min-h-[80vh]">
+        <div className="animate-spin h-8 w-8 border-4 border-white border-t-transparent rounded-full" />
+      </div>
     );
   }
 
   return (
-    <GlassBackground>
-      <div className="flex flex-col items-center justify-center min-h-[80vh]">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">
-            Packing List
-          </h1>
-          <p className="text-white/70">
-            {mode === 'login' && 'Sign in to manage your packing lists'}
-            {mode === 'register' && 'Create an account to get started'}
-            {mode === 'forgot' && 'Reset your password'}
-          </p>
-        </div>
+    <div className="flex flex-col items-center justify-center min-h-[80vh]">
+      <div className="text-center mb-8">
+        <h1 className="text-3xl font-bold text-white mb-2">
+          Packing List
+        </h1>
+        <p className="text-white/70">
+          {mode === 'login' && 'Sign in to manage your packing lists'}
+          {mode === 'register' && 'Create an account to get started'}
+          {mode === 'forgot' && 'Reset your password'}
+        </p>
+      </div>
 
-        <GlassCard className="w-full max-w-md p-6">
+      <GlassCard className="w-full max-w-md p-6">
           {mode !== 'forgot' && (
             <div className="flex mb-6 bg-white/10 rounded-lg p-1">
               <button
@@ -214,6 +211,5 @@ export function Login() {
           )}
         </GlassCard>
       </div>
-    </GlassBackground>
   );
 }

@@ -183,7 +183,6 @@ export const useStore = create<PackingStore>()((set, get) => ({
       return null;
     }
 
-    set((state) => ({ sections: [...state.sections, result.data!] }));
     const newSectionId = result.data.id;
 
     // If this is the first section, also create "Sonstiges" section
@@ -195,41 +194,55 @@ export const useStore = create<PackingStore>()((set, get) => ({
       });
 
       if (otherResult.data) {
-        set((state) => ({ sections: [...state.sections, otherResult.data!] }));
-
         // Move any existing items (section_id = null) to "Sonstiges"
         const existingItems = get().items.filter(
           (item) => item.list_id === listId && item.section_id === null
         );
 
+        let updatedItems = get().items;
         if (existingItems.length > 0) {
           const itemIds = existingItems.map((item) => item.id);
           await itemsApi.bulkUpdateSectionId(itemIds, otherResult.data.id);
 
-          // Update local state
-          set((state) => ({
-            items: state.items.map((item) =>
-              itemIds.includes(item.id)
-                ? { ...item, section_id: otherResult.data!.id }
-                : item
-            ),
-          }));
+          // Prepare updated items for batch update
+          updatedItems = get().items.map((item) =>
+            itemIds.includes(item.id)
+              ? { ...item, section_id: otherResult.data!.id }
+              : item
+          );
 
           useToastStore.getState().addToast(
             'Vorhandene Items wurden nach "Sonstiges" verschoben',
             'info'
           );
         }
-      }
-    }
 
-    // Touch list timestamp
-    const listResult = await listsApi.touchTimestamp(listId);
-    if (listResult.data) {
+        // Touch list timestamp
+        const listResult = await listsApi.touchTimestamp(listId);
+
+        // Batch all state updates into a single set() call
+        set((state) => ({
+          sections: [...state.sections, result.data!, otherResult.data!],
+          items: updatedItems,
+          lists: listResult.data
+            ? state.lists.map((list) =>
+                list.id === listId ? { ...list, updated_at: listResult.data!.updated_at } : list
+              )
+            : state.lists,
+        }));
+      }
+    } else {
+      // No "Sonstiges" section needed, just add the new section and update timestamp
+      const listResult = await listsApi.touchTimestamp(listId);
+
+      // Batch updates
       set((state) => ({
-        lists: state.lists.map((list) =>
-          list.id === listId ? { ...list, updated_at: listResult.data!.updated_at } : list
-        ),
+        sections: [...state.sections, result.data!],
+        lists: listResult.data
+          ? state.lists.map((list) =>
+              list.id === listId ? { ...list, updated_at: listResult.data!.updated_at } : list
+            )
+          : state.lists,
       }));
     }
 
@@ -536,31 +549,32 @@ export const useStore = create<PackingStore>()((set, get) => ({
     const item = get().items.find((i) => i.id === id);
     const listId = item?.list_id;
 
-    // Optimistic update
-    const previousItems = get().items;
-    set((state) => ({
-      items: state.items.filter((item) => item.id !== id),
-    }));
-
+    // Perform deletion first
     const result = await itemsApi.delete(id);
     if (result.error) {
-      // Rollback on error
-      set({ items: previousItems, error: result.error });
+      set({ error: result.error });
       useToastStore.getState().addToast('Fehler beim Löschen des Items', 'error');
       return;
     }
 
     // Touch list timestamp
+    let listTimestamp = null;
     if (listId) {
       const listResult = await listsApi.touchTimestamp(listId);
       if (listResult.data) {
-        set((state) => ({
-          lists: state.lists.map((list) =>
-            list.id === listId ? { ...list, updated_at: listResult.data!.updated_at } : list
-          ),
-        }));
+        listTimestamp = listResult.data.updated_at;
       }
     }
+
+    // Batch all state updates into a single set() call
+    set((state) => ({
+      items: state.items.filter((item) => item.id !== id),
+      lists: listTimestamp
+        ? state.lists.map((list) =>
+            list.id === listId ? { ...list, updated_at: listTimestamp } : list
+          )
+        : state.lists,
+    }));
   },
 
   toggleItem: async (id) => {

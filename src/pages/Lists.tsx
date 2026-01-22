@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Clock, ChevronRight } from 'lucide-react';
-import { GlassBackground, GlassCard, LoadingSpinner } from '../components/ui';
+import { useShallow } from 'zustand/react/shallow';
+import { GlassCard, LoadingSpinner } from '../components/ui';
 import { ListModal, UserMenu } from '../components/features';
 import { useStore } from '../store/useStore';
 import { useAuth } from '../context/AuthContext';
@@ -35,10 +36,26 @@ export function Lists() {
   const { user } = useAuth();
   const [isListModalOpen, setIsListModalOpen] = useState(false);
 
-  const lists = useStore((state) => state.lists);
-  const isLoading = useStore((state) => state.isLoading);
-  const addList = useStore((state) => state.addList);
-  const getListStats = useStore((state) => state.getListStats);
+  // Use shallow equality to prevent unnecessary re-renders when object references change
+  const { lists, isLoading, addList, items } = useStore(
+    useShallow((state) => ({
+      lists: state.lists,
+      isLoading: state.isLoading,
+      addList: state.addList,
+      items: state.items,
+    }))
+  );
+
+  // Memoize stats computation to avoid recalculating on every render
+  const listStats = useMemo(() => {
+    const statsMap = new Map<string, { total: number; packed: number }>();
+    lists.forEach((list) => {
+      const listItems = items.filter((item) => item.list_id === list.id);
+      const packed = listItems.filter((item) => item.checked).length;
+      statsMap.set(list.id, { total: listItems.length, packed });
+    });
+    return statsMap;
+  }, [lists, items]);
 
   // Extract display name for greeting
   const firstName = user?.user_metadata?.first_name as string | undefined;
@@ -63,7 +80,7 @@ export function Lists() {
   // Loading state
   if (isLoading) {
     return (
-      <GlassBackground>
+      <>
         <header className="flex items-start justify-between mb-[clamp(24px,4vw,32px)]">
           <div className="flex-1 min-w-0 pr-4">
             <h1 className="text-[clamp(22px,5vw,32px)] font-bold text-glass-primary leading-tight">
@@ -77,12 +94,12 @@ export function Lists() {
         <div className="flex items-center justify-center py-12">
           <LoadingSpinner size="lg" />
         </div>
-      </GlassBackground>
+      </>
     );
   }
 
   return (
-    <GlassBackground>
+    <>
       {/* Header */}
       <header className="flex items-start justify-between mb-[clamp(24px,4vw,32px)]">
         <div className="flex-1 min-w-0 pr-4">
@@ -100,7 +117,7 @@ export function Lists() {
       {lists.length > 0 ? (
         <div className="space-y-[clamp(12px,2vw,16px)]">
           {lists.map((list) => {
-            const stats = getListStats(list.id);
+            const stats = listStats.get(list.id) || { total: 0, packed: 0 };
 
             return (
               <GlassCard
@@ -174,6 +191,6 @@ export function Lists() {
         onSave={handleSaveList}
         mode="add"
       />
-    </GlassBackground>
+    </>
   );
 }

@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useShallow } from 'zustand/react/shallow';
 import {
   DndContext,
   closestCenter,
@@ -15,7 +16,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { ArrowLeft, MoreVertical, Plus } from 'lucide-react';
-import { GlassBackground, GlassCard, ProgressBar } from '../components/ui';
+import { GlassCard, ProgressBar } from '../components/ui';
 import {
   SectionCard,
   SectionModal,
@@ -62,25 +63,48 @@ export function ListDetail() {
   const [isListOptionsMenuOpen, setIsListOptionsMenuOpen] = useState(false);
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
 
-  // Store
-  const lists = useStore((state) => state.lists);
-  const allItems = useStore((state) => state.items);
-  const allSections = useStore((state) => state.sections);
-  const toggleItem = useStore((state) => state.toggleItem);
-  const addItem = useStore((state) => state.addItem);
-  const updateItem = useStore((state) => state.updateItem);
-  const deleteItem = useStore((state) => state.deleteItem);
-  const updateList = useStore((state) => state.updateList);
-  const deleteList = useStore((state) => state.deleteList);
-  const resetListItems = useStore((state) => state.resetListItems);
-  const addSection = useStore((state) => state.addSection);
-  const updateSection = useStore((state) => state.updateSection);
-  const deleteSection = useStore((state) => state.deleteSection);
-  const deleteSectionMoveItems = useStore((state) => state.deleteSectionMoveItems);
-  const deleteLastSectionKeepItems = useStore((state) => state.deleteLastSectionKeepItems);
-  const toggleSectionCollapse = useStore((state) => state.toggleSectionCollapse);
-  const reorderItemsInSection = useStore((state) => state.reorderItemsInSection);
-  const reorderItems = useStore((state) => state.reorderItems);
+  // Store - use shallow equality to prevent unnecessary re-renders
+  const {
+    lists,
+    allItems,
+    allSections,
+    toggleItem,
+    addItem,
+    updateItem,
+    deleteItem,
+    updateList,
+    deleteList,
+    resetListItems,
+    addSection,
+    updateSection,
+    deleteSection,
+    deleteSectionMoveItems,
+    deleteLastSectionKeepItems,
+    toggleSectionCollapse,
+    reorderItemsInSection,
+    reorderItems,
+  } = useStore(
+    useShallow((state) => ({
+      lists: state.lists,
+      allItems: state.items,
+      allSections: state.sections,
+      toggleItem: state.toggleItem,
+      addItem: state.addItem,
+      updateItem: state.updateItem,
+      deleteItem: state.deleteItem,
+      updateList: state.updateList,
+      deleteList: state.deleteList,
+      resetListItems: state.resetListItems,
+      addSection: state.addSection,
+      updateSection: state.updateSection,
+      deleteSection: state.deleteSection,
+      deleteSectionMoveItems: state.deleteSectionMoveItems,
+      deleteLastSectionKeepItems: state.deleteLastSectionKeepItems,
+      toggleSectionCollapse: state.toggleSectionCollapse,
+      reorderItemsInSection: state.reorderItemsInSection,
+      reorderItems: state.reorderItems,
+    }))
+  );
 
   // DnD sensors for loose items
   const sensors = useSensors(
@@ -94,33 +118,42 @@ export function ListDetail() {
     })
   );
 
-  // Computed data
-  const list = lists.find((l) => l.id === listId);
-  const sections = allSections
-    .filter((s) => s.list_id === listId)
-    .sort((a, b) => a.position - b.position);
-  const items = allItems.filter((item) => item.list_id === listId);
-  const looseItems = items
-    .filter((item) => item.section_id === null)
-    .sort((a, b) => a.position - b.position);
+  // Computed data - memoize to avoid recalculating on every render
+  const list = useMemo(() => lists.find((l) => l.id === listId), [lists, listId]);
+  const sections = useMemo(
+    () =>
+      allSections
+        .filter((s) => s.list_id === listId)
+        .sort((a, b) => a.position - b.position),
+    [allSections, listId]
+  );
+  const items = useMemo(
+    () => allItems.filter((item) => item.list_id === listId),
+    [allItems, listId]
+  );
+  const looseItems = useMemo(
+    () =>
+      items
+        .filter((item) => item.section_id === null)
+        .sort((a, b) => a.position - b.position),
+    [items]
+  );
 
   // If list not found
   if (!list) {
     return (
-      <GlassBackground>
-        <GlassCard className="p-8 text-center">
-          <div className="text-6xl mb-4">🔍</div>
-          <h2 className="text-xl font-semibold text-white mb-2 text-glass-primary">
-            Liste nicht gefunden
-          </h2>
-          <button
-            onClick={() => navigate('/lists')}
-            className="mt-4 text-white/80 hover:text-white transition-colors"
-          >
-            Zurück zur Übersicht
-          </button>
-        </GlassCard>
-      </GlassBackground>
+      <GlassCard className="p-8 text-center">
+        <div className="text-6xl mb-4">🔍</div>
+        <h2 className="text-xl font-semibold text-white mb-2 text-glass-primary">
+          Liste nicht gefunden
+        </h2>
+        <button
+          onClick={() => navigate('/lists')}
+          className="mt-4 text-white/80 hover:text-white transition-colors"
+        >
+          Zurück zur Übersicht
+        </button>
+      </GlassCard>
     );
   }
 
@@ -256,7 +289,7 @@ export function ListDetail() {
   const packedItems = items.filter((item) => item.checked).length;
 
   return (
-    <GlassBackground>
+    <>
       {/* Header Card */}
       <GlassCard className="p-[clamp(20px,4vw,28px)] mb-[clamp(16px,3vw,24px)]">
         <div className="flex items-center justify-between mb-4">
@@ -422,6 +455,6 @@ export function ListDetail() {
         checkedCount={packedItems}
         totalCount={totalItems}
       />
-    </GlassBackground>
+    </>
   );
 }

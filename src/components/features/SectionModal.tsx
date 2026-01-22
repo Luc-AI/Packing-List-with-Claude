@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
+import { useKeyboardHeight } from '../../hooks/useKeyboardHeight';
 
 interface SectionModalProps {
   isOpen: boolean;
@@ -19,6 +20,7 @@ export function SectionModal({
 }: SectionModalProps) {
   const [name, setName] = useState(initialName);
   const inputRef = useRef<HTMLInputElement>(null);
+  const keyboardHeight = useKeyboardHeight();
 
   useEffect(() => {
     setName(initialName);
@@ -55,6 +57,9 @@ export function SectionModal({
     <div
       className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
       onClick={onClose}
+      style={{
+        paddingBottom: keyboardHeight > 0 ? `${keyboardHeight}px` : undefined,
+      }}
     >
       {/* Backdrop */}
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />

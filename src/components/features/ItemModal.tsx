@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Trash2 } from 'lucide-react';
+import { useKeyboardHeight } from '../../hooks/useKeyboardHeight';
 
 interface ItemModalProps {
   isOpen: boolean;
@@ -14,6 +15,7 @@ interface ItemModalProps {
 export function ItemModal({ isOpen, onClose, onSave, onDelete, initialText = '', mode }: ItemModalProps) {
   const [text, setText] = useState(initialText);
   const inputRef = useRef<HTMLInputElement>(null);
+  const keyboardHeight = useKeyboardHeight();
 
   useEffect(() => {
     setText(initialText);
@@ -52,6 +54,9 @@ export function ItemModal({ isOpen, onClose, onSave, onDelete, initialText = '',
     <div
       className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center"
       onClick={(e) => e.target === e.currentTarget && onClose()}
+      style={{
+        paddingBottom: keyboardHeight > 0 ? `${keyboardHeight}px` : undefined,
+      }}
     >
       {/* Backdrop - Style B (contextual, 40%, no blur) per styleguide 11.8 */}
       <div className="absolute inset-0 bg-black/40" />

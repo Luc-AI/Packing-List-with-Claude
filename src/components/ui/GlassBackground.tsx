@@ -23,13 +23,13 @@ export function GlassBackground({ children }: { children: React.ReactNode }) {
           transform: 'translate3d(0, 0, 0)',
         }}
       >
-        <picture className="block absolute inset-0">
+        <picture className="block w-full h-full">
           <source srcSet={backgroundAvif} type="image/avif" />
           <source srcSet={backgroundWebp} type="image/webp" />
           <img
             src={backgroundWebp}
             alt=""
-            className="absolute inset-0 w-full h-full object-cover"
+            className="block w-full h-full object-cover"
           />
         </picture>
       </div>

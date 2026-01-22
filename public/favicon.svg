@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 576" fill="currentColor">
+  <defs>
+    <style>
+      .luggage { fill: #1a1a1a; }
+    </style>
+  </defs>
+  <g class="luggage">
+    <!-- Main suitcase body -->
+    <rect x="150" y="180" width="276" height="310" rx="30" ry="30"/>
+
+    <!-- Handle on top -->
+    <path d="M 230 180 Q 230 90, 288 90 Q 346 90, 346 180"
+          fill="none"
+          stroke="#1a1a1a"
+          stroke-width="30"
+          stroke-linecap="round"/>
+
+    <!-- Vertical stripes -->
+    <rect x="216" y="220" width="24" height="230" rx="12" ry="12" fill="white"/>
+    <rect x="276" y="220" width="24" height="230" rx="12" ry="12" fill="white"/>
+    <rect x="336" y="220" width="24" height="230" rx="12" ry="12" fill="white"/>
+
+    <!-- Side handle -->
+    <rect x="400" y="280" width="30" height="80" rx="15" ry="15"/>
+
+    <!-- Wheels -->
+    <circle cx="200" cy="510" r="28" fill="#1a1a1a"/>
+    <circle cx="200" cy="510" r="15" fill="white"/>
+    <circle cx="376" cy="510" r="28" fill="#1a1a1a"/>
+    <circle cx="376" cy="510" r="15" fill="white"/>
+  </g>
+</svg>

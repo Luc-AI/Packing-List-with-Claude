@@ -94,7 +94,7 @@ export function Login() {
     <div className="flex flex-col items-center justify-center min-h-[80vh]">
       <div className="text-center mb-8">
         <h1 className="text-3xl font-bold text-white mb-2">
-          Packing List
+          Guet Parat Packliste
         </h1>
         <p className="text-white/70">
           {mode === 'login' && 'Sign in to manage your packing lists'}

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Button, Input, GlassCard } from '../components/ui';
 
@@ -11,6 +11,7 @@ export function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [privacyAccepted, setPrivacyAccepted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
@@ -23,6 +24,7 @@ export function Login() {
     setEmail('');
     setPassword('');
     setConfirmPassword('');
+    setPrivacyAccepted(false);
     setMessage(null);
   };
 
@@ -166,6 +168,32 @@ export function Login() {
               />
             )}
 
+            {mode === 'register' && (
+              <div className="flex items-start gap-3">
+                <input
+                  type="checkbox"
+                  id="privacy-checkbox"
+                  checked={privacyAccepted}
+                  onChange={(e) => setPrivacyAccepted(e.target.checked)}
+                  className="mt-1 h-4 w-4 rounded border-white/30 bg-white/10 text-white focus:ring-white/50 focus:ring-offset-0"
+                />
+                <label
+                  htmlFor="privacy-checkbox"
+                  className="text-sm text-white/85 leading-relaxed"
+                >
+                  Ich habe die{' '}
+                  <Link
+                    to="/privacy"
+                    className="text-white underline hover:text-white/80 transition-colors"
+                    target="_blank"
+                  >
+                    Datenschutzerklärung
+                  </Link>
+                  {' '}gelesen und akzeptiert
+                </label>
+              </div>
+            )}
+
             {message && (
               <div
                 className={`p-3 rounded-lg text-sm ${
@@ -182,7 +210,11 @@ export function Login() {
               type="submit"
               className="w-full"
               isLoading={isSubmitting}
-              disabled={!email || (mode !== 'forgot' && !password)}
+              disabled={
+                !email ||
+                (mode !== 'forgot' && !password) ||
+                (mode === 'register' && (password !== confirmPassword || !privacyAccepted))
+              }
             >
               {mode === 'login' && 'Sign In'}
               {mode === 'register' && 'Create Account'}
@@ -191,13 +223,24 @@ export function Login() {
           </form>
 
           {mode === 'login' && (
-            <button
-              type="button"
-              onClick={() => handleModeChange('forgot')}
-              className="mt-4 w-full text-center text-sm text-white/60 hover:text-white transition-colors"
-            >
-              Forgot your password?
-            </button>
+            <>
+              <button
+                type="button"
+                onClick={() => handleModeChange('forgot')}
+                className="mt-4 w-full text-center text-sm text-white/60 hover:text-white transition-colors"
+              >
+                Forgot your password?
+              </button>
+              <div className="mt-4 text-center">
+                <Link
+                  to="/privacy"
+                  className="text-xs text-white/50 hover:text-white/70 transition-colors"
+                  target="_blank"
+                >
+                  Datenschutzerklärung
+                </Link>
+              </div>
+            </>
           )}
 
           {mode === 'forgot' && (

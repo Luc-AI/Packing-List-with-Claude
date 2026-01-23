@@ -6,6 +6,7 @@ import { Lists } from './pages/Lists';
 import { ListDetail } from './pages/ListDetail';
 import { Login } from './pages/Login';
 import { ResetPassword } from './pages/ResetPassword';
+import { PrivacyPolicy } from './pages/PrivacyPolicy';
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route
               path="/lists"
               element={

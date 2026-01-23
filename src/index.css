@@ -56,7 +56,6 @@ html, body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #2d7a8c; /* Match background image color - prevents black gaps */
   /* iOS Safari scroll fix: lock body, scroll happens in fixed container */
   height: 100%;
   overflow: hidden;

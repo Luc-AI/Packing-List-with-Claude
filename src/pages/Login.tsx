@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Button, Input, GlassBackground, GlassCard } from '../components/ui';
+import { Button, Input, GlassCard } from '../components/ui';
 
 type AuthMode = 'login' | 'register' | 'forgot';
 
@@ -11,6 +11,7 @@ export function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [privacyAccepted, setPrivacyAccepted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
@@ -23,6 +24,7 @@ export function Login() {
     setEmail('');
     setPassword('');
     setConfirmPassword('');
+    setPrivacyAccepted(false);
     setMessage(null);
   };
 
@@ -84,29 +86,26 @@ export function Login() {
 
   if (loading) {
     return (
-      <GlassBackground>
-        <div className="flex items-center justify-center min-h-[80vh]">
-          <div className="animate-spin h-8 w-8 border-4 border-white border-t-transparent rounded-full" />
-        </div>
-      </GlassBackground>
+      <div className="flex items-center justify-center min-h-[80vh]">
+        <div className="animate-spin h-8 w-8 border-4 border-white border-t-transparent rounded-full" />
+      </div>
     );
   }
 
   return (
-    <GlassBackground>
-      <div className="flex flex-col items-center justify-center min-h-[80vh]">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">
-            Packing List
-          </h1>
-          <p className="text-white/70">
-            {mode === 'login' && 'Sign in to manage your packing lists'}
-            {mode === 'register' && 'Create an account to get started'}
-            {mode === 'forgot' && 'Reset your password'}
-          </p>
-        </div>
+    <div className="flex flex-col items-center justify-center min-h-[80vh]">
+      <div className="text-center mb-8">
+        <h1 className="text-3xl font-bold text-white mb-2">
+          Guet Parat Packliste
+        </h1>
+        <p className="text-white/70">
+          {mode === 'login' && 'Sign in to manage your packing lists'}
+          {mode === 'register' && 'Create an account to get started'}
+          {mode === 'forgot' && 'Reset your password'}
+        </p>
+      </div>
 
-        <GlassCard className="w-full max-w-md p-6">
+      <GlassCard className="w-full max-w-md p-6">
           {mode !== 'forgot' && (
             <div className="flex mb-6 bg-white/10 rounded-lg p-1">
               <button
@@ -169,6 +168,32 @@ export function Login() {
               />
             )}
 
+            {mode === 'register' && (
+              <div className="flex items-start gap-3">
+                <input
+                  type="checkbox"
+                  id="privacy-checkbox"
+                  checked={privacyAccepted}
+                  onChange={(e) => setPrivacyAccepted(e.target.checked)}
+                  className="mt-1 h-4 w-4 rounded border-white/30 bg-white/10 text-white focus:ring-white/50 focus:ring-offset-0"
+                />
+                <label
+                  htmlFor="privacy-checkbox"
+                  className="text-sm text-white/85 leading-relaxed"
+                >
+                  Ich habe die{' '}
+                  <Link
+                    to="/privacy"
+                    className="text-white underline hover:text-white/80 transition-colors"
+                    target="_blank"
+                  >
+                    Datenschutzerklärung
+                  </Link>
+                  {' '}gelesen und akzeptiert
+                </label>
+              </div>
+            )}
+
             {message && (
               <div
                 className={`p-3 rounded-lg text-sm ${
@@ -185,7 +210,11 @@ export function Login() {
               type="submit"
               className="w-full"
               isLoading={isSubmitting}
-              disabled={!email || (mode !== 'forgot' && !password)}
+              disabled={
+                !email ||
+                (mode !== 'forgot' && !password) ||
+                (mode === 'register' && (password !== confirmPassword || !privacyAccepted))
+              }
             >
               {mode === 'login' && 'Sign In'}
               {mode === 'register' && 'Create Account'}
@@ -194,13 +223,24 @@ export function Login() {
           </form>
 
           {mode === 'login' && (
-            <button
-              type="button"
-              onClick={() => handleModeChange('forgot')}
-              className="mt-4 w-full text-center text-sm text-white/60 hover:text-white transition-colors"
-            >
-              Forgot your password?
-            </button>
+            <>
+              <button
+                type="button"
+                onClick={() => handleModeChange('forgot')}
+                className="mt-4 w-full text-center text-sm text-white/60 hover:text-white transition-colors"
+              >
+                Forgot your password?
+              </button>
+              <div className="mt-4 text-center">
+                <Link
+                  to="/privacy"
+                  className="text-xs text-white/50 hover:text-white/70 transition-colors"
+                  target="_blank"
+                >
+                  Datenschutzerklärung
+                </Link>
+              </div>
+            </>
           )}
 
           {mode === 'forgot' && (
@@ -214,6 +254,5 @@ export function Login() {
           )}
         </GlassCard>
       </div>
-    </GlassBackground>
   );
 }

@@ -20,7 +20,7 @@ export function GlassBackground({ children }: { children: React.ReactNode }) {
           bottom: 'calc(-1 * env(safe-area-inset-bottom, 0px))',
           left: 'calc(-1 * env(safe-area-inset-left, 0px))',
           width: 'calc(100vw + env(safe-area-inset-left, 0px) + env(safe-area-inset-right, 0px))',
-          height: 'calc(100lvh + env(safe-area-inset-top, 0px) + env(safe-area-inset-bottom, 0px))',
+          height: 'calc(100svh + env(safe-area-inset-top, 0px) + env(safe-area-inset-bottom, 0px))',
           WebkitTransform: 'translate3d(0, 0, 0)',
           transform: 'translate3d(0, 0, 0)',
         }}
@@ -45,7 +45,7 @@ export function GlassBackground({ children }: { children: React.ReactNode }) {
           bottom: 'calc(-1 * env(safe-area-inset-bottom, 0px))',
           left: 'calc(-1 * env(safe-area-inset-left, 0px))',
           width: 'calc(100vw + env(safe-area-inset-left, 0px) + env(safe-area-inset-right, 0px))',
-          height: 'calc(100lvh + env(safe-area-inset-top, 0px) + env(safe-area-inset-bottom, 0px))',
+          height: 'calc(100svh + env(safe-area-inset-top, 0px) + env(safe-area-inset-bottom, 0px))',
           background: 'linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.3) 100%)',
           WebkitTransform: 'translate3d(0, 0, 0)',
           transform: 'translate3d(0, 0, 0)',

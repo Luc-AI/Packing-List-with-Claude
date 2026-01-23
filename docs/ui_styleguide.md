@@ -136,12 +136,12 @@ html, body {
 - Scrolling happens inside a fixed container
 - `-webkit-overflow-scrolling: touch` enables momentum scrolling
 
-#### 2.2.2 Safe Area Insets (Notch/Status Bar)
+#### 2.2.2 Safe Area Insets & Viewport Units
 
-To extend backgrounds behind the iOS status bar/notch while keeping content readable:
+To extend backgrounds behind the iOS status bar/notch AND cover the viewport when the address bar is visible:
 
 ```tsx
-{/* Background extends into safe areas */}
+{/* Background extends into safe areas AND covers all viewport states */}
 <div
   className="fixed -z-20"
   style={{
@@ -149,6 +149,8 @@ To extend backgrounds behind the iOS status bar/notch while keeping content read
     right: 'calc(-1 * env(safe-area-inset-right, 0px))',
     bottom: 'calc(-1 * env(safe-area-inset-bottom, 0px))',
     left: 'calc(-1 * env(safe-area-inset-left, 0px))',
+    width: 'calc(100vw + env(safe-area-inset-left, 0px) + env(safe-area-inset-right, 0px))',
+    height: 'calc(100svh + env(safe-area-inset-top, 0px) + env(safe-area-inset-bottom, 0px))',
   }}
 />
 
@@ -160,6 +162,26 @@ To extend backgrounds behind the iOS status bar/notch while keeping content read
 - `index.html` must have `viewport-fit=cover` in the viewport meta tag
 - Background/overlay use negative safe-area positioning
 - Content container uses `inset-0` (stays within safe areas)
+
+**Understanding Viewport Units:**
+
+| Unit | Meaning | Use Case |
+|------|---------|----------|
+| `100svh` | **Small Viewport Height** - viewport when address bar is VISIBLE | ✅ Use for backgrounds (covers BOTH address bar states) |
+| `100lvh` | **Large Viewport Height** - viewport when address bar is HIDDEN | ❌ Too small when address bar visible (causes black areas) |
+| `100dvh` | **Dynamic Viewport Height** - changes as address bar shows/hides | ❌ Causes background jumping/repainting |
+| `100vh` | **Standard Viewport Height** - typically between svh and lvh | ⚠️ Inconsistent across browsers |
+
+**Why We Use `100svh`:**
+- `100svh` represents the LARGEST possible viewport (when address bar is visible)
+- This ensures coverage in BOTH viewport states (address bar visible AND hidden)
+- Unlike `100dvh`, `100svh` is STATIC - it doesn't change when scrolling
+- No jumping or repainting because the background size remains constant
+
+**Historical Context:**
+- Previous attempts used `100lvh` which only covered the viewport when address bar was hidden
+- This caused black areas at top/bottom when address bar was visible on mobile Safari
+- `100svh` solves this by covering the larger state instead
 
 ### 2.3 Tailwind Utility Classes
 

@@ -1,15 +1,18 @@
+import { useState } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical, MoreVertical, Check } from 'lucide-react';
+import { Menu, MoreVertical, Check } from 'lucide-react';
 import { cn } from '../../lib/utils';
+import { ItemModal } from './ItemModal';
+import { ItemOptionsMenu } from './ItemOptionsMenu';
 
 interface SortableItemRowProps {
   id: string;
   text: string;
   checked: boolean;
   onToggle: (id: string) => void;
-  onOptionsClick?: (id: string) => void;
-  isLast?: boolean;
+  onUpdateText: (text: string) => void;
+  onDelete: () => void;
 }
 
 export function SortableItemRow({
@@ -17,9 +20,12 @@ export function SortableItemRow({
   text,
   checked,
   onToggle,
-  onOptionsClick,
-  isLast = false,
+  onUpdateText,
+  onDelete,
 }: SortableItemRowProps) {
+  const [isOptionsMenuOpen, setIsOptionsMenuOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
   const {
     attributes,
     listeners,
@@ -41,27 +47,24 @@ export function SortableItemRow({
       ref={setNodeRef}
       style={style}
       className={cn(
-        'flex items-center p-[clamp(14px,3vw,18px)] px-[clamp(14px,3vw,20px)] cursor-pointer transition-colors duration-200 min-h-[56px]',
-        checked ? 'bg-white/[0.08]' : 'hover:bg-white/[0.05]',
-        !isLast && 'border-b border-white/15',
+        'flex items-center p-[clamp(14px,3vw,18px)] px-[clamp(14px,3vw,20px)] min-h-[56px] rounded-xl transition-colors duration-200 hover:bg-white/[0.03]',
         isDragging && 'glass-card rounded-xl'
       )}
-      onClick={() => onToggle(id)}
     >
       {/* Drag Handle */}
       <div
         className="mr-[clamp(8px,2vw,12px)] text-white/40 cursor-grab active:cursor-grabbing flex items-center shrink-0 touch-none"
-        onClick={(e) => e.stopPropagation()}
         {...attributes}
         {...listeners}
       >
-        <GripVertical size={20} />
+        <Menu size={20} />
       </div>
 
       {/* Checkbox */}
       <div
+        onClick={() => onToggle(id)}
         className={cn(
-          'w-[clamp(24px,4vw,26px)] h-[clamp(24px,4vw,26px)] rounded-[9px] flex items-center justify-center mr-[clamp(10px,2.5vw,14px)] shrink-0 transition-all duration-200'
+          'w-[clamp(24px,4vw,26px)] h-[clamp(24px,4vw,26px)] rounded-[9px] flex items-center justify-center mr-[clamp(10px,2.5vw,14px)] shrink-0 transition-all duration-200 cursor-pointer'
         )}
         style={
           checked
@@ -79,10 +82,11 @@ export function SortableItemRow({
         {checked && <Check size={17} color="white" strokeWidth={3} />}
       </div>
 
-      {/* Item Text */}
+      {/* Text - Click to toggle */}
       <span
+        onClick={() => onToggle(id)}
         className={cn(
-          'flex-1 text-[clamp(14px,3vw,16px)] transition-all duration-200 break-words',
+          'flex-1 cursor-pointer select-none text-[clamp(14px,3vw,16px)] transition-all duration-200',
           checked
             ? 'text-glass-muted line-through decoration-white/40 font-normal'
             : 'text-white font-medium'
@@ -92,16 +96,31 @@ export function SortableItemRow({
         {text}
       </span>
 
-      {/* More Options Button */}
+      {/* Menu */}
       <button
-        className="bg-transparent border-none cursor-pointer text-white/50 p-1 flex items-center transition-colors duration-150 shrink-0 ml-2 hover:text-white/80"
-        onClick={(e) => {
-          e.stopPropagation();
-          onOptionsClick?.(id);
-        }}
+        onClick={() => setIsOptionsMenuOpen(true)}
+        className="text-white/50 hover:text-white/80 p-1 transition-colors duration-150 shrink-0 ml-2"
       >
         <MoreVertical size={20} />
       </button>
+
+      <ItemOptionsMenu
+        isOpen={isOptionsMenuOpen}
+        onClose={() => setIsOptionsMenuOpen(false)}
+        onEdit={() => {
+          setIsOptionsMenuOpen(false);
+          setIsEditModalOpen(true);
+        }}
+        onDelete={onDelete}
+      />
+
+      <ItemModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        onSave={onUpdateText}
+        initialText={text}
+        mode="edit"
+      />
     </div>
   );
 }

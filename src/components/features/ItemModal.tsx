@@ -1,17 +1,21 @@
 import { useState, useEffect, useRef } from 'react';
-import { X } from 'lucide-react';
+import { createPortal } from 'react-dom';
+import { X, Trash2 } from 'lucide-react';
+import { useKeyboardHeight } from '../../hooks/useKeyboardHeight';
 
 interface ItemModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (text: string) => void;
+  onDelete?: () => void;
   initialText?: string;
   mode: 'add' | 'edit';
 }
 
-export function ItemModal({ isOpen, onClose, onSave, initialText = '', mode }: ItemModalProps) {
+export function ItemModal({ isOpen, onClose, onSave, onDelete, initialText = '', mode }: ItemModalProps) {
   const [text, setText] = useState(initialText);
   const inputRef = useRef<HTMLInputElement>(null);
+  const keyboardHeight = useKeyboardHeight();
 
   useEffect(() => {
     setText(initialText);
@@ -46,12 +50,15 @@ export function ItemModal({ isOpen, onClose, onSave, initialText = '', mode }: I
 
   if (!isOpen) return null;
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
+      className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center"
       onClick={(e) => e.target === e.currentTarget && onClose()}
+      style={{
+        paddingBottom: keyboardHeight > 0 ? `${keyboardHeight}px` : undefined,
+      }}
     >
-      {/* Backdrop */}
+      {/* Backdrop - Style B (contextual, 40%, no blur) per styleguide 11.8 */}
       <div className="absolute inset-0 bg-black/40" />
 
       {/* Modal */}
@@ -101,8 +108,23 @@ export function ItemModal({ isOpen, onClose, onSave, initialText = '', mode }: I
               {mode === 'add' ? 'Hinzufügen' : 'Speichern'}
             </button>
           </div>
+
+          {mode === 'edit' && onDelete && (
+            <button
+              type="button"
+              onClick={() => {
+                onDelete();
+                onClose();
+              }}
+              className="w-full mt-4 px-4 py-3 rounded-xl bg-red-500/20 text-red-400 font-medium hover:bg-red-500/30 transition-colors flex items-center justify-center gap-2"
+            >
+              <Trash2 size={18} />
+              Item löschen
+            </button>
+          )}
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

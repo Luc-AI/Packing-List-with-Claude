@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
+import { useKeyboardHeight } from '../../hooks/useKeyboardHeight';
 
 interface ListModalProps {
   isOpen: boolean;
@@ -23,6 +24,7 @@ export function ListModal({
   const [name, setName] = useState(initialName);
   const [emoji, setEmoji] = useState(initialEmoji);
   const inputRef = useRef<HTMLInputElement>(null);
+  const keyboardHeight = useKeyboardHeight();
 
   useEffect(() => {
     setName(initialName);
@@ -63,6 +65,9 @@ export function ListModal({
     <div
       className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
       onClick={(e) => e.target === e.currentTarget && onClose()}
+      style={{
+        paddingBottom: keyboardHeight > 0 ? `${keyboardHeight}px` : undefined,
+      }}
     >
       {/* Backdrop - darker with blur for 'add', lighter for 'edit' */}
       <div className={`absolute inset-0 ${mode === 'add' ? 'bg-black/60 backdrop-blur-sm' : 'bg-black/40'}`} />
@@ -139,6 +144,7 @@ export function ListModal({
               {mode === 'add' ? 'Erstellen' : 'Speichern'}
             </button>
           </div>
+
         </form>
       </div>
     </div>

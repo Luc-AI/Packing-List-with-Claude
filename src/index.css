@@ -24,6 +24,19 @@
   --glass-inset-light: inset 0 1px 0 rgba(255, 255, 255, 0.35);
   --glass-scrim: rgba(0, 0, 0, 0.08);
 
+  /* Glass Card Gradients (Mobile defaults) */
+  --glass-gradient-top: rgba(255, 255, 255, 0.22);
+  --glass-gradient-bottom: rgba(255, 255, 255, 0.14);
+  --glass-gradient-light-top: rgba(255, 255, 255, 0.16);
+  --glass-gradient-light-bottom: rgba(255, 255, 255, 0.10);
+
+  /* Dashed Button Glass */
+  --glass-bg-dashed: rgba(255, 255, 255, 0.12);
+  --glass-bg-dashed-hover: rgba(255, 255, 255, 0.18);
+
+  /* Progress Bar Background */
+  --glass-progress-track: rgba(255, 255, 255, 0.2);
+
   /* Accent Colors */
   --progress-gradient: linear-gradient(90deg, rgba(255, 183, 77, 0.95) 0%, rgba(255, 138, 101, 0.95) 100%);
   --progress-shadow: 0 2px 8px rgba(255, 138, 101, 0.5);
@@ -39,31 +52,76 @@
 }
 
 /* Base Styles */
-body {
+html, body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* iOS Safari scroll fix: lock body, scroll happens in fixed container */
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+/* Dynamic viewport height for mobile browsers */
+/* Use 100lvh (large viewport) for fixed backgrounds to prevent jumping on iOS Safari */
+/* 100dvh causes layout shifts when address bar shows/hides */
+:root {
+  --app-height: 100lvh;
+}
+
+/* Fallback for browsers without lvh support */
+@supports not (height: 100lvh) {
+  :root {
+    --app-height: 100vh;
+  }
 }
 
 /* Utility Classes for Glass Effects */
+/* Note: -webkit-backdrop-filter must come BEFORE backdrop-filter to prevent
+   CSS processors from deduplicating them. Chrome needs the standard property,
+   Safari needs the webkit prefix. */
 .glass-card {
   background:
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.14)),
+    linear-gradient(to bottom, var(--glass-gradient-top), var(--glass-gradient-bottom)),
     var(--glass-scrim);
-  backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
   border: 1px solid var(--glass-border);
   box-shadow: var(--glass-shadow), var(--glass-inset);
 }
 
 .glass-card-light {
   background:
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.10)),
+    linear-gradient(to bottom, var(--glass-gradient-light-top), var(--glass-gradient-light-bottom)),
     var(--glass-scrim);
-  backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
   border: 1px solid var(--glass-border-light);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18), var(--glass-inset-light);
+  transition: background 0.3s ease, border-color 0.3s ease;
+}
+
+.glass-card-light.group:hover {
+  background:
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.19), rgba(255, 255, 255, 0.12)),
+    var(--glass-scrim);
+}
+
+.glass-button-dashed {
+  background: var(--glass-bg-dashed);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: 2px dashed var(--glass-border);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  text-shadow: var(--text-shadow-light);
+  transition: all 0.2s ease;
+}
+
+.glass-button-dashed:hover {
+  background: var(--glass-bg-dashed-hover);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
 }
 
 .text-glass-primary {
@@ -126,12 +184,48 @@ body {
   animation: fade-in 0.2s ease-out;
 }
 
-/* Desktop-specific glass enhancement for better contrast */
+/* Section collapse/expand animation */
+.section-content {
+  overflow: hidden;
+  transition: max-height 0.3s ease-out, opacity 0.2s ease-out;
+}
+
+.section-content.collapsed {
+  max-height: 0;
+  opacity: 0;
+}
+
+.section-content.expanded {
+  max-height: 2000px;
+  opacity: 1;
+}
+
+/* Desktop-specific glass enhancement for better contrast (Liquid Glass) */
 @media (pointer: fine) and (min-width: 640px) {
   :root {
     --glass-blur: blur(28px) saturate(120%);
     --glass-bg: rgba(255, 255, 255, 0.22);
     --glass-bg-light: rgba(255, 255, 255, 0.17);
-    --glass-scrim: rgba(0, 0, 0, 0.10);
+    --glass-scrim: rgba(0, 0, 0, 0.12);
+
+    /* Enhanced glass gradients for desktop readability */
+    --glass-gradient-top: rgba(255, 255, 255, 0.38);
+    --glass-gradient-bottom: rgba(255, 255, 255, 0.28);
+    --glass-gradient-light-top: rgba(255, 255, 255, 0.32);
+    --glass-gradient-light-bottom: rgba(255, 255, 255, 0.22);
+
+    /* Enhanced dashed button for desktop */
+    --glass-bg-dashed: rgba(255, 255, 255, 0.20);
+    --glass-bg-dashed-hover: rgba(255, 255, 255, 0.28);
+
+    /* Enhanced progress track */
+    --glass-progress-track: rgba(255, 255, 255, 0.28);
+  }
+
+  /* Desktop hover for glass-card-light */
+  .glass-card-light.group:hover {
+    background:
+      linear-gradient(to bottom, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0.25)),
+      var(--glass-scrim);
   }
 }

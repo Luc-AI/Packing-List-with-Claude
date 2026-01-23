@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, MoreVertical } from 'lucide-react';
+import { useShallow } from 'zustand/react/shallow';
 import {
   DndContext,
   closestCenter,
@@ -15,8 +15,18 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { GlassBackground, GlassCard, ProgressBar } from '../components/ui';
-import { SortableItemRow, AddItemButton, ItemModal, OptionsMenu, ListModal, ListOptionsMenu } from '../components/features';
+import { ArrowLeft, MoreVertical, Plus } from 'lucide-react';
+import { GlassCard, ProgressBar } from '../components/ui';
+import {
+  SectionCard,
+  SectionModal,
+  ListModal,
+  ListOptionsMenu,
+  ResetConfirmModal,
+  DeleteSectionModal,
+  SortableItemRow,
+  GhostItemButton,
+} from '../components/features';
 import { useStore } from '../store/useStore';
 
 // Format date for display
@@ -41,28 +51,62 @@ export function ListDetail() {
   const navigate = useNavigate();
   const { listId } = useParams<{ listId: string }>();
 
-  // Item modal state
-  const [isItemModalOpen, setIsItemModalOpen] = useState(false);
-  const [isOptionsMenuOpen, setIsOptionsMenuOpen] = useState(false);
-  const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
-  const [modalMode, setModalMode] = useState<'add' | 'edit'>('add');
+  // Section modal state
+  const [isSectionModalOpen, setIsSectionModalOpen] = useState(false);
+  const [editingSectionId, setEditingSectionId] = useState<string | null>(null);
+  const [deletingSectionId, setDeletingSectionId] = useState<string | null>(null);
+  const [deletingSectionItemCount, setDeletingSectionItemCount] = useState(0);
+  const [deletingSectionIsLast, setDeletingSectionIsLast] = useState(false);
 
   // List modal state
   const [isListModalOpen, setIsListModalOpen] = useState(false);
   const [isListOptionsMenuOpen, setIsListOptionsMenuOpen] = useState(false);
+  const [isResetModalOpen, setIsResetModalOpen] = useState(false);
 
-  // Store
-  const lists = useStore((state) => state.lists);
-  const allItems = useStore((state) => state.items);
-  const toggleItem = useStore((state) => state.toggleItem);
-  const addItem = useStore((state) => state.addItem);
-  const updateItem = useStore((state) => state.updateItem);
-  const deleteItem = useStore((state) => state.deleteItem);
-  const updateList = useStore((state) => state.updateList);
-  const deleteList = useStore((state) => state.deleteList);
-  const reorderItems = useStore((state) => state.reorderItems);
+  // Store - use shallow equality to prevent unnecessary re-renders
+  const {
+    lists,
+    allItems,
+    allSections,
+    toggleItem,
+    addItem,
+    updateItem,
+    deleteItem,
+    updateList,
+    deleteList,
+    resetListItems,
+    addSection,
+    updateSection,
+    deleteSection,
+    deleteSectionMoveItems,
+    deleteLastSectionKeepItems,
+    toggleSectionCollapse,
+    reorderItemsInSection,
+    reorderItems,
+  } = useStore(
+    useShallow((state) => ({
+      lists: state.lists,
+      allItems: state.items,
+      allSections: state.sections,
+      toggleItem: state.toggleItem,
+      addItem: state.addItem,
+      updateItem: state.updateItem,
+      deleteItem: state.deleteItem,
+      updateList: state.updateList,
+      deleteList: state.deleteList,
+      resetListItems: state.resetListItems,
+      addSection: state.addSection,
+      updateSection: state.updateSection,
+      deleteSection: state.deleteSection,
+      deleteSectionMoveItems: state.deleteSectionMoveItems,
+      deleteLastSectionKeepItems: state.deleteLastSectionKeepItems,
+      toggleSectionCollapse: state.toggleSectionCollapse,
+      reorderItemsInSection: state.reorderItemsInSection,
+      reorderItems: state.reorderItems,
+    }))
+  );
 
-  // DnD sensors
+  // DnD sensors for loose items
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -74,62 +118,142 @@ export function ListDetail() {
     })
   );
 
-  // Computed data
-  const list = lists.find((l) => l.id === listId);
-  const items = allItems
-    .filter((item) => item.list_id === listId)
-    .sort((a, b) => a.position - b.position);
-
-  const selectedItem = selectedItemId ? items.find((i) => i.id === selectedItemId) : null;
+  // Computed data - memoize to avoid recalculating on every render
+  const list = useMemo(() => lists.find((l) => l.id === listId), [lists, listId]);
+  const sections = useMemo(
+    () =>
+      allSections
+        .filter((s) => s.list_id === listId)
+        .sort((a, b) => a.position - b.position),
+    [allSections, listId]
+  );
+  const items = useMemo(
+    () => allItems.filter((item) => item.list_id === listId),
+    [allItems, listId]
+  );
+  const looseItems = useMemo(
+    () =>
+      items
+        .filter((item) => item.section_id === null)
+        .sort((a, b) => a.position - b.position),
+    [items]
+  );
 
   // If list not found
   if (!list) {
     return (
-      <GlassBackground>
-        <GlassCard className="p-8 text-center">
-          <div className="text-6xl mb-4">🔍</div>
-          <h2 className="text-xl font-semibold text-white mb-2 text-glass-primary">
-            Liste nicht gefunden
-          </h2>
-          <button
-            onClick={() => navigate('/lists')}
-            className="mt-4 text-white/80 hover:text-white transition-colors"
-          >
-            Zurück zur Übersicht
-          </button>
-        </GlassCard>
-      </GlassBackground>
+      <GlassCard className="p-8 text-center">
+        <div className="text-6xl mb-4">🔍</div>
+        <h2 className="text-xl font-semibold text-white mb-2 text-glass-primary">
+          Liste nicht gefunden
+        </h2>
+        <button
+          onClick={() => navigate('/lists')}
+          className="mt-4 text-white/80 hover:text-white transition-colors"
+        >
+          Zurück zur Übersicht
+        </button>
+      </GlassCard>
     );
   }
 
-  const handleAddItem = () => {
-    setModalMode('add');
-    setSelectedItemId(null);
-    setIsItemModalOpen(true);
+  // Section handlers
+  const handleAddSection = () => {
+    setIsSectionModalOpen(true);
   };
 
-  const handleItemOptions = (id: string) => {
-    setSelectedItemId(id);
-    setIsOptionsMenuOpen(true);
-  };
-
-  const handleEditItem = () => {
-    setModalMode('edit');
-    setIsItemModalOpen(true);
-  };
-
-  const handleDeleteItem = async () => {
-    if (selectedItemId) {
-      await deleteItem(selectedItemId);
-      setSelectedItemId(null);
+  const handleSaveSection = async (name: string) => {
+    if (listId) {
+      await addSection(listId, name);
     }
   };
 
-  const handleSaveItem = async (text: string) => {
-    if (modalMode === 'add' && listId) {
-      await addItem(listId, text);
-    } else if (modalMode === 'edit' && selectedItemId) {
-      await updateItem(selectedItemId, { text });
+  const handleToggleSectionCollapse = async (sectionId: string) => {
+    await toggleSectionCollapse(sectionId);
+  };
+
+  const handleEditSection = (sectionId: string) => {
+    setEditingSectionId(sectionId);
+  };
+
+  const handleSaveEditSection = async (name: string) => {
+    if (editingSectionId) {
+      await updateSection(editingSectionId, { name });
+      setEditingSectionId(null);
+    }
+  };
+
+  const handleDeleteSection = (sectionId: string, itemCount: number, isLastSection: boolean) => {
+    if (itemCount === 0) {
+      // Empty section - delete immediately
+      deleteSection(sectionId);
+    } else {
+      // Section has items - show confirmation modal
+      setDeletingSectionId(sectionId);
+      setDeletingSectionItemCount(itemCount);
+      setDeletingSectionIsLast(isLastSection);
+    }
+  };
+
+  const handleDeleteSectionAll = async () => {
+    if (deletingSectionId) {
+      await deleteSection(deletingSectionId);
+      setDeletingSectionId(null);
+      setDeletingSectionIsLast(false);
+    }
+  };
+
+  const handleDeleteSectionMoveItems = async () => {
+    if (deletingSectionId) {
+      if (deletingSectionIsLast) {
+        // Last section: keep items as loose items
+        await deleteLastSectionKeepItems(deletingSectionId);
+      } else {
+        // Normal case: move items to Sonstiges
+        await deleteSectionMoveItems(deletingSectionId);
+      }
+      setDeletingSectionId(null);
+      setDeletingSectionIsLast(false);
+    }
+  };
+
+  // Item handlers
+  const handleAddItem = async (sectionId: string | null, text: string) => {
+    if (listId) {
+      await addItem(listId, sectionId, text);
+    }
+  };
+
+  const handleUpdateItem = async (itemId: string, text: string) => {
+    await updateItem(itemId, { text });
+  };
+
+  const handleDeleteItem = async (itemId: string) => {
+    await deleteItem(itemId);
+  };
+
+  const handleToggleItem = async (itemId: string) => {
+    await toggleItem(itemId);
+  };
+
+  const handleReorderItems = async (sectionId: string, itemIds: string[]) => {
+    await reorderItemsInSection(sectionId, itemIds);
+  };
+
+  // Handler for reordering loose items (no section)
+  const handleLooseItemsDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id && listId) {
+      const oldIndex = looseItems.findIndex((item) => item.id === active.id);
+      const newIndex = looseItems.findIndex((item) => item.id === over.id);
+
+      if (oldIndex !== -1 && newIndex !== -1) {
+        const newItems = [...looseItems];
+        const [movedItem] = newItems.splice(oldIndex, 1);
+        newItems.splice(newIndex, 0, movedItem);
+        reorderItems(listId, newItems.map((item) => item.id));
+      }
     }
   };
 
@@ -155,20 +279,9 @@ export function ListDetail() {
     }
   };
 
-  // DnD handler
-  const handleDragEnd = async (event: DragEndEvent) => {
-    const { active, over } = event;
-
-    if (over && active.id !== over.id && listId) {
-      const oldIndex = items.findIndex((item) => item.id === active.id);
-      const newIndex = items.findIndex((item) => item.id === over.id);
-
-      if (oldIndex !== -1 && newIndex !== -1) {
-        const newItems = [...items];
-        const [movedItem] = newItems.splice(oldIndex, 1);
-        newItems.splice(newIndex, 0, movedItem);
-        await reorderItems(listId, newItems.map((item) => item.id));
-      }
+  const handleResetItems = async () => {
+    if (listId) {
+      await resetListItems(listId);
     }
   };
 
@@ -176,7 +289,7 @@ export function ListDetail() {
   const packedItems = items.filter((item) => item.checked).length;
 
   return (
-    <GlassBackground>
+    <>
       {/* Header Card */}
       <GlassCard className="p-[clamp(20px,4vw,28px)] mb-[clamp(16px,3vw,24px)]">
         <div className="flex items-center justify-between mb-4">
@@ -202,57 +315,118 @@ export function ListDetail() {
           Zuletzt bearbeitet: {formatDate(list.updated_at)}
         </p>
 
-        <ProgressBar current={packedItems} total={totalItems} />
+        <ProgressBar
+          current={packedItems}
+          total={totalItems}
+          onReset={() => setIsResetModalOpen(true)}
+        />
       </GlassCard>
 
-      {/* Items List */}
-      {items.length > 0 ? (
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragEnd={handleDragEnd}
-        >
-          <SortableContext items={items.map((i) => i.id)} strategy={verticalListSortingStrategy}>
-            <GlassCard variant="light" className="overflow-hidden mb-[clamp(16px,3vw,24px)]">
-              {items.map((item, index) => (
-                <SortableItemRow
-                  key={item.id}
-                  id={item.id}
-                  text={item.text}
-                  checked={item.checked}
-                  onToggle={(id) => toggleItem(id)}
-                  onOptionsClick={handleItemOptions}
-                  isLast={index === items.length - 1}
+      {/* Single Card containing all sections or loose items */}
+      {sections.length > 0 ? (
+        <div className="glass-card-light rounded-3xl overflow-hidden mb-[clamp(16px,3vw,24px)]">
+          <div className="p-2">
+            {sections.map((section, index) => {
+              const sectionItems = items
+                .filter((item) => item.section_id === section.id)
+                .sort((a, b) => a.position - b.position);
+
+              return (
+                <SectionCard
+                  key={section.id}
+                  section={section}
+                  items={sectionItems}
+                  totalSectionCount={sections.length}
+                  onToggleCollapse={handleToggleSectionCollapse}
+                  onAddItem={handleAddItem}
+                  onUpdateItem={handleUpdateItem}
+                  onDeleteItem={handleDeleteItem}
+                  onToggleItem={handleToggleItem}
+                  onReorderItems={handleReorderItems}
+                  onEditSection={handleEditSection}
+                  onDeleteSection={handleDeleteSection}
+                  isFirst={index === 0}
                 />
-              ))}
-            </GlassCard>
-          </SortableContext>
-        </DndContext>
+              );
+            })}
+          </div>
+        </div>
       ) : (
-        <GlassCard variant="light" className="p-8 text-center mb-[clamp(16px,3vw,24px)]">
-          <div className="text-4xl mb-3">📝</div>
-          <p className="text-glass-secondary">Noch keine Items vorhanden</p>
-        </GlassCard>
+        // Section-less mode: show loose items + ghost button
+        <div className="glass-card-light rounded-3xl overflow-hidden mb-[clamp(16px,3vw,24px)]">
+          <div className="p-2">
+            {looseItems.length === 0 && (
+              <p className="text-white/40 text-sm text-center py-3">
+                Füge Items hinzu oder erstelle Abschnitte
+              </p>
+            )}
+            {looseItems.length > 0 && (
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleLooseItemsDragEnd}
+              >
+                <SortableContext
+                  items={looseItems.map((i) => i.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  {looseItems.map((item) => (
+                    <SortableItemRow
+                      key={item.id}
+                      id={item.id}
+                      text={item.text}
+                      checked={item.checked}
+                      onToggle={handleToggleItem}
+                      onUpdateText={(text) => handleUpdateItem(item.id, text)}
+                      onDelete={() => handleDeleteItem(item.id)}
+                    />
+                  ))}
+                </SortableContext>
+              </DndContext>
+            )}
+            <GhostItemButton onAdd={(text) => handleAddItem(null, text)} />
+          </div>
+        </div>
       )}
 
-      {/* Add Item Button */}
-      <AddItemButton onClick={handleAddItem} />
+      {/* Add Section Button */}
+      <button
+        onClick={handleAddSection}
+        className="w-full py-4 rounded-2xl glass-button-dashed text-white/60 hover:text-white flex items-center justify-center gap-2 font-medium"
+      >
+        <Plus size={20} />
+        Neuer Abschnitt
+      </button>
 
-      {/* Item Modal */}
-      <ItemModal
-        isOpen={isItemModalOpen}
-        onClose={() => setIsItemModalOpen(false)}
-        onSave={handleSaveItem}
-        initialText={modalMode === 'edit' ? selectedItem?.text ?? '' : ''}
-        mode={modalMode}
+      {/* Section Modal - Add */}
+      <SectionModal
+        isOpen={isSectionModalOpen}
+        onClose={() => setIsSectionModalOpen(false)}
+        onSave={handleSaveSection}
+        mode="add"
       />
 
-      {/* Options Menu */}
-      <OptionsMenu
-        isOpen={isOptionsMenuOpen}
-        onClose={() => setIsOptionsMenuOpen(false)}
-        onEdit={handleEditItem}
-        onDelete={handleDeleteItem}
+      {/* Section Modal - Edit */}
+      <SectionModal
+        isOpen={editingSectionId !== null}
+        onClose={() => setEditingSectionId(null)}
+        onSave={handleSaveEditSection}
+        initialName={sections.find((s) => s.id === editingSectionId)?.name || ''}
+        mode="edit"
+      />
+
+      {/* Delete Section Modal */}
+      <DeleteSectionModal
+        isOpen={deletingSectionId !== null}
+        onClose={() => {
+          setDeletingSectionId(null);
+          setDeletingSectionIsLast(false);
+        }}
+        onDeleteAll={handleDeleteSectionAll}
+        onMoveToOther={handleDeleteSectionMoveItems}
+        itemCount={deletingSectionItemCount}
+        sectionName={sections.find((s) => s.id === deletingSectionId)?.name || ''}
+        isLastSection={deletingSectionIsLast}
       />
 
       {/* List Modal */}
@@ -272,6 +446,15 @@ export function ListDetail() {
         onEdit={handleEditList}
         onDelete={handleDeleteList}
       />
-    </GlassBackground>
+
+      {/* Reset Confirm Modal */}
+      <ResetConfirmModal
+        isOpen={isResetModalOpen}
+        onClose={() => setIsResetModalOpen(false)}
+        onConfirm={handleResetItems}
+        checkedCount={packedItems}
+        totalCount={totalItems}
+      />
+    </>
   );
 }

@@ -73,79 +73,81 @@ export function Register() {
 
   return (
     <>
-      <div className="fixed inset-0 flex items-center justify-center overflow-hidden">
-        <GlassCard className="p-[clamp(20px,4vw,28px)] w-full max-w-[400px]">
-          <h1 className="text-glass-primary text-[clamp(18px,4vw,24px)] font-bold mb-2 text-center">
-            Erstelle deinen Account
-          </h1>
+      <div className="fixed inset-0 flex items-center justify-center overflow-hidden px-[clamp(16px,4vw,20px)]">
+        <div className="w-full max-w-[400px] space-y-[clamp(12px,3vw,16px)]">
+          <GlassCard className="p-[clamp(20px,4vw,28px)]">
+            <h1 className="text-glass-primary text-[clamp(22px,5vw,28px)] font-bold mb-2 text-center">
+              Erstelle deinen Account
+            </h1>
 
-          <p className="text-glass-secondary text-[clamp(13px,2.5vw,14px)] text-center mb-6">
-            Verwalte deine Packlisten für jede Reise.
-          </p>
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <Input
-              type="email"
-              label="E-Mail-Adresse"
-              placeholder="deine@email.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              autoComplete="email"
-            />
-
-            <Input
-              type="password"
-              label="Passwort"
-              placeholder="Mindestens 6 Zeichen"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              autoComplete="new-password"
-            />
-
-            {message && <MessageDisplay message={message} />}
-
-            <Button
-              type="submit"
-              className="w-full"
-              isLoading={isSubmitting}
-              disabled={!email || !password}
-            >
-              Account erstellen
-            </Button>
-
-            <div className="text-center text-sm text-glass-secondary pt-2">
-              Hast du bereits einen Account?{' '}
-              <Link
-                to="/"
-                className="text-white font-medium hover:text-white/90 underline transition-colors"
-              >
-                Anmelden
-              </Link>
-            </div>
-
-            <p className="text-xs text-center text-glass-muted pt-2">
-              Mit der Registrierung stimmst du unseren{' '}
-              <button
-                type="button"
-                onClick={() => setShowPrivacyModal(true)}
-                className="text-white/80 underline hover:text-white transition-colors"
-              >
-                Datenschutzbestimmungen
-              </button>
-              {' '}und{' '}
-              <button
-                type="button"
-                onClick={() => setShowTermsModal(true)}
-                className="text-white/80 underline hover:text-white transition-colors"
-              >
-                Nutzungsbedingungen
-              </button>
-              {' '}zu.
+            <p className="text-glass-secondary text-[clamp(13px,2.5vw,14px)] text-center mb-6">
+              Verwalte deine Packlisten für jede Reise.
             </p>
-          </form>
-        </GlassCard>
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <Input
+                type="email"
+                label="E-Mail-Adresse"
+                placeholder="deine@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                autoComplete="email"
+              />
+
+              <Input
+                type="password"
+                label="Passwort"
+                placeholder="Mindestens 6 Zeichen"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                autoComplete="new-password"
+              />
+
+              {message && <MessageDisplay message={message} />}
+
+              <Button
+                type="submit"
+                className="w-full"
+                isLoading={isSubmitting}
+                disabled={!email || !password}
+              >
+                Account erstellen
+              </Button>
+
+              <div className="text-center text-sm text-glass-secondary pt-2">
+                Hast du bereits einen Account?{' '}
+                <Link
+                  to="/"
+                  className="text-white font-medium hover:text-white/90 underline transition-colors"
+                >
+                  Anmelden
+                </Link>
+              </div>
+            </form>
+          </GlassCard>
+
+          <p className="text-xs text-center text-glass-muted px-4">
+            Mit der Registrierung stimmst du unseren{' '}
+            <button
+              type="button"
+              onClick={() => setShowPrivacyModal(true)}
+              className="text-white/80 underline hover:text-white transition-colors"
+            >
+              Datenschutzbestimmungen
+            </button>
+            {' '}und{' '}
+            <button
+              type="button"
+              onClick={() => setShowTermsModal(true)}
+              className="text-white/80 underline hover:text-white transition-colors"
+            >
+              Nutzungsbedingungen
+            </button>
+            {' '}zu.
+          </p>
+        </div>
       </div>
 
       <PrivacyPolicyModal

@@ -55,9 +55,9 @@ export function Login() {
   };
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center overflow-hidden">
+    <div className="fixed inset-0 flex items-center justify-center overflow-hidden px-[clamp(16px,4vw,20px)]">
       <GlassCard className="p-[clamp(20px,4vw,28px)] w-full max-w-[400px]">
-        <h1 className="text-glass-primary text-[clamp(18px,4vw,24px)] font-bold mb-2 text-center">
+        <h1 className="text-glass-primary text-[clamp(22px,5vw,28px)] font-bold mb-2 text-center">
           Bereit für die nächste Reise?
         </h1>
 

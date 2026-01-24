@@ -17,7 +17,11 @@
       "Bash(GIT_CURL_VERBOSE=1 git push:*)",
       "Bash(grep:*)",
       "Bash(ls:*)",
-      "Bash(git log:*)"
+      "Bash(git log:*)",
+      "Bash(lsof:*)",
+      "Bash(open \"http://localhost:5173\")",
+      "Bash(git checkout:*)",
+      "Bash(git merge:*)"
     ]
   }
 }

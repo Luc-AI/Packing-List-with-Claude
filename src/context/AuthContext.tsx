@@ -112,7 +112,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    // Immediately clear local state to ensure logout happens in UI
+    useStore.getState().clearData();
+    setUser(null);
+    setSession(null);
+
+    // Try to notify Supabase, but don't wait for it or care if it fails
+    supabase.auth.signOut({ scope: 'local' }).catch(() => {
+      // Silently ignore - local state is already cleared
+    });
   };
 
   const resetPassword = async (email: string): Promise<AuthResult> => {

@@ -77,6 +77,8 @@ export function UserMenu() {
   const handleLogout = async () => {
     setIsOpen(false);
     await signOut();
+    // Note: signOut() always clears local state, so logout always succeeds
+    // Any Supabase API errors are logged but don't prevent local logout
   };
 
   // Avatar: first letter of first_name, fallback to email initial

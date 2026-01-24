@@ -20,15 +20,15 @@ export function Button({
       disabled={disabled || isLoading}
       className={cn(
         'font-medium rounded-lg transition-colors',
-        'focus:outline-none focus:ring-2 focus:ring-offset-2',
+        'focus:outline-none focus:ring-2',
         // Size variants
         size === 'sm' && 'px-3 py-1.5 text-sm',
         size === 'md' && 'px-4 py-2 text-base',
         size === 'lg' && 'px-6 py-3 text-lg',
-        // Color variants
-        variant === 'primary' && 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500',
-        variant === 'secondary' && 'bg-gray-200 text-gray-800 hover:bg-gray-300 focus:ring-gray-500',
-        variant === 'danger' && 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500',
+        // Color variants - glass theme
+        variant === 'primary' && 'bg-white/20 text-white hover:bg-white/25 focus:ring-white/50 border border-white/30',
+        variant === 'secondary' && 'bg-white/10 text-white hover:bg-white/15 focus:ring-white/50 border border-white/20',
+        variant === 'danger' && 'bg-red-500/20 text-red-400 hover:bg-red-500/30 focus:ring-white/50 border border-red-500/30',
         // Disabled state
         (disabled || isLoading) && 'opacity-50 cursor-not-allowed',
         className

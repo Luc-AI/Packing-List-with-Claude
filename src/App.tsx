@@ -5,6 +5,8 @@ import { ToastContainer, GlassBackground } from './components/ui';
 import { Lists } from './pages/Lists';
 import { ListDetail } from './pages/ListDetail';
 import { Login } from './pages/Login';
+import { Register } from './pages/Register';
+import { ForgotPassword } from './pages/ForgotPassword';
 import { ResetPassword } from './pages/ResetPassword';
 import { PrivacyPolicy } from './pages/PrivacyPolicy';
 import { TermsOfService } from './pages/TermsOfService';
@@ -16,10 +18,15 @@ function App() {
       <BrowserRouter>
         <GlassBackground>
           <Routes>
-            <Route path="/login" element={<Login />} />
+            {/* Auth routes - public */}
+            <Route path="/" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/terms" element={<TermsOfService />} />
+
+            {/* Protected routes */}
             <Route
               path="/lists"
               element={
@@ -36,8 +43,9 @@ function App() {
                 </ProtectedRoute>
               }
             />
-            <Route path="/" element={<Navigate to="/lists" replace />} />
-            <Route path="*" element={<Navigate to="/lists" replace />} />
+
+            {/* Catch all */}
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </GlassBackground>
       </BrowserRouter>

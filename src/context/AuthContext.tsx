@@ -27,7 +27,6 @@ interface AuthContextType {
   needsOnboarding: boolean;
   signUp: (email: string, password: string) => Promise<AuthResult>;
   signIn: (email: string, password: string) => Promise<AuthResult>;
-  signInWithGoogle: () => Promise<AuthResult>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<AuthResult>;
   updatePassword: (newPassword: string) => Promise<AuthResult>;
@@ -97,19 +96,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return { error };
   };
 
-  const signInWithGoogle = async (): Promise<AuthResult> => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/lists`,
-        queryParams: {
-          access_type: 'offline',
-          prompt: 'consent',
-        },
-      },
-    });
-    return { error };
-  };
 
   const signOut = async () => {
     // Immediately clear local state to ensure logout happens in UI
@@ -149,7 +135,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, session, loading, needsOnboarding, signUp, signIn, signInWithGoogle, signOut, resetPassword, updatePassword, updateUserMetadata }}
+      value={{ user, session, loading, needsOnboarding, signUp, signIn, signOut, resetPassword, updatePassword, updateUserMetadata }}
     >
       {children}
     </AuthContext.Provider>
